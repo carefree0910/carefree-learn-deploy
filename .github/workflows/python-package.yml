@@ -21,10 +21,11 @@ jobs:
         with:
           miniconda-version: "latest"
           python-version: ${{ matrix.python-version }}
-      - name: Install Package
+      - name: Install Packages
         shell: bash -l {0}
         run: |
           pip install .
+          pip install pytest pytest-cov
       - name: Test with pytest
         shell: bash -l {0}
         run: |
