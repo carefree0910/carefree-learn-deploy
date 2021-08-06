@@ -24,7 +24,7 @@ jobs:
       - name: Install Packages
         shell: bash -l {0}
         run: |
-          pip install .
+          pip install -e .
           pip install pytest pytest-cov
       - name: Test with pytest
         shell: bash -l {0}
