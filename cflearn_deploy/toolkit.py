@@ -9,11 +9,7 @@ from skimage.filters import unsharp_mask
 
 
 def is_gray(arr: np.ndarray) -> bool:
-    if isinstance(arr, np.ndarray):
-        return arr.shape[-1] == 1
-    if len(arr.shape) == 3:
-        return arr.shape[0] == 1
-    return arr.shape[1] == 1
+    return arr.shape[-1] == 1
 
 
 def min_max_normalize(arr: np.ndarray, *, global_norm: bool = True) -> np.ndarray:
