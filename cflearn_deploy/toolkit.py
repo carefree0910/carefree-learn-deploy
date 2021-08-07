@@ -52,8 +52,9 @@ def cutout(
     alpha_im = Image.fromarray(min_max_normalize(alpha))
     size = normalized_img.shape[1], normalized_img.shape[0]
     alpha_im = alpha_im.resize(size, Image.NEAREST)
-    alpha = gaussian(np.array(alpha_im), smooth)
-    alpha = unsharp_mask(alpha, smooth, smooth * tight)
+    if smooth > 0:
+        alpha = gaussian(np.array(alpha_im), smooth)
+        alpha = unsharp_mask(alpha, smooth, smooth * tight)
     alpha = min_max_normalize(alpha)
     rgba = naive_cutout(normalized_img, alpha)
     return alpha, rgba
