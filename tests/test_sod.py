@@ -3,6 +3,7 @@ import unittest
 
 import numpy as np
 
+from cflearn_deploy.toolkit import np_to_bytes
 from cflearn_deploy.sod.core import SOD
 
 
@@ -10,12 +11,17 @@ current_folder = os.path.dirname(__file__)
 
 
 class TestSOD(unittest.TestCase):
-    def test_get_cutout(self) -> None:
+    def test_sod(self) -> None:
+        test_src = np.random.random([320, 320, 3]).astype(np.float32)
+        test_src2 = np.random.random([224, 224, 3]).astype(np.float32)
         sod = SOD(os.path.join(current_folder, "models", "test.onnx"))
-        sod._get_alpha(np.random.random([320, 320, 3]))
-        src_path = os.path.join(current_folder, "data", "pytorch.png")
-        tgt_path = os.path.join(current_folder, "data", "pytorch_cutout.png")
-        sod.generate_cutout(src_path, tgt_path)
+        sod._get_alpha(test_src, rescale=False)
+        sod._get_alpha(test_src2, rescale=True)
+        with self.assertRaises(Exception):
+            sod._get_alpha(test_src2, rescale=False)
+        sod.run(np_to_bytes(test_src))
+        with self.assertRaises(Exception):
+            sod.run(np_to_bytes(test_src2))
 
 
 if __name__ == "__main__":
