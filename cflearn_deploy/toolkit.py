@@ -33,28 +33,29 @@ def imagenet_normalize(arr: np.ndarray) -> np.ndarray:
     return (arr - mean) / std
 
 
-def to_uint8(normalized: np.ndarray) -> np.ndarray:
-    return (np.clip(normalized * 255.0, 0.0, 255.0)).astype(np.uint8)
+def to_uint8(normalized_img: np.ndarray) -> np.ndarray:
+    return (np.clip(normalized_img * 255.0, 0.0, 255.0)).astype(np.uint8)
 
 
-def naive_cutout(img: np.ndarray, alpha: np.ndarray) -> np.ndarray:
-    if img.shape[-1] == 4:
-        img = img[..., :3] * img[..., -1:]
-    return to_uint8(np.concatenate([img, alpha[..., None]], axis=2))
+def naive_cutout(normalized_img: np.ndarray, alpha: np.ndarray) -> np.ndarray:
+    if normalized_img.shape[-1] == 4:
+        normalized_img = normalized_img[..., :3] * normalized_img[..., -1:]
+    return to_uint8(np.concatenate([normalized_img, alpha[..., None]], axis=2))
 
 
 def cutout(
-    img: np.ndarray,
+    normalized_img: np.ndarray,
     alpha: np.ndarray,
     smooth: int = 4,
     tight: float = 0.9,
 ) -> Tuple[np.ndarray, np.ndarray]:
     alpha_im = Image.fromarray(min_max_normalize(alpha))
-    alpha_im = alpha_im.resize((img.shape[1], img.shape[0]), Image.NEAREST)
+    size = normalized_img.shape[1], normalized_img.shape[0]
+    alpha_im = alpha_im.resize(size, Image.NEAREST)
     alpha = gaussian(np.array(alpha_im), smooth)
     alpha = unsharp_mask(alpha, smooth, smooth * tight)
     alpha = min_max_normalize(alpha)
-    rgba = naive_cutout(img, alpha)
+    rgba = naive_cutout(normalized_img, alpha)
     return alpha, rgba
 
 
