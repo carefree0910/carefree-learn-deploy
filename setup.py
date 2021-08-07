@@ -10,7 +10,13 @@ setup(
     version=VERSION,
     packages=find_packages(exclude=("tests",)),
     install_requires=[
+        "fastapi",
+        "uvicorn",
+        "pydantic",
         "requests",
+        "starlette",
+        "python-multipart",
+        "requests_toolbelt",
         "onnx",
         "pillow",
         "onnxruntime",
