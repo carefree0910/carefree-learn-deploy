@@ -1,3 +1,5 @@
+import io
+
 import numpy as np
 
 from PIL import Image
@@ -58,6 +60,19 @@ def cutout(
     alpha = min_max_normalize(alpha)
     rgba = naive_cutout(normalized_img, alpha)
     return alpha, rgba
+
+
+def bytes_to_np(img_bytes: bytes, *, mode: str) -> np.ndarray:
+    img = np.array(Image.open(io.BytesIO(img_bytes)).convert(mode))
+    return img.astype(np.float32) / 255.0
+
+
+def np_to_bytes(img_arr: np.ndarray) -> bytes:
+    if img_arr.dtype != np.uint8:
+        img_arr = to_uint8(img_arr)
+    bytes_io = io.BytesIO()
+    Image.fromarray(img_arr).save(bytes_io, format="PNG")
+    return bytes_io.getvalue()
 
 
 class Compose:
