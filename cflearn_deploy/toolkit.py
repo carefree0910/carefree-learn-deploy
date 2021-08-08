@@ -45,15 +45,20 @@ def naive_cutout(normalized_img: np.ndarray, alpha: np.ndarray) -> np.ndarray:
     return to_uint8(np.concatenate([normalized_img, alpha[..., None]], axis=2))
 
 
+def alpha_align(img: np.ndarray, alpha: np.ndarray) -> np.ndarray:
+    alpha_im = Image.fromarray(min_max_normalize(alpha))
+    size = img.shape[1], img.shape[0]
+    alpha = np.array(alpha_im.resize(size, Image.NEAREST))
+    return alpha
+
+
 def cutout(
     normalized_img: np.ndarray,
     alpha: np.ndarray,
     smooth: int = 4,
     tight: float = 0.9,
 ) -> Tuple[np.ndarray, np.ndarray]:
-    alpha_im = Image.fromarray(min_max_normalize(alpha))
-    size = normalized_img.shape[1], normalized_img.shape[0]
-    alpha = np.array(alpha_im.resize(size, Image.NEAREST))
+    alpha = alpha_align(normalized_img, alpha)
     if smooth > 0:
         alpha = gaussian(alpha, smooth)
         alpha = unsharp_mask(alpha, smooth, smooth * tight)
