@@ -22,7 +22,7 @@ model_root = os.path.join(os.path.dirname(__file__), "models")
 
 
 class SODModel(BaseModel):
-    smooth: int = 4
+    smooth: int = 0
     tight: float = 0.9
     model_path: Optional[str] = None
 

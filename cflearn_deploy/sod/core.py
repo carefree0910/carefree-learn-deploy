@@ -32,7 +32,7 @@ class SOD:
         self,
         img_bytes: bytes,
         *,
-        smooth: int = 4,
+        smooth: int = 0,
         tight: float = 0.9,
     ) -> np.ndarray:
         src = bytes_to_np(img_bytes, mode="RGB")
