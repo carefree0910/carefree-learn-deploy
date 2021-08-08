@@ -24,6 +24,25 @@ def min_max_normalize(arr: np.ndarray, *, global_norm: bool = True) -> np.ndarra
     return (arr - arr_min) / diff
 
 
+def quantile_normalize(
+    arr: np.ndarray,
+    *,
+    q: float = 0.01,
+    global_norm: bool = True,
+) -> np.ndarray:
+    eps = 1.0e-8
+    if global_norm:
+        arr_min = np.quantile(arr, q).item()
+        arr_max = np.quantile(arr, 1.0 - q).item()
+        diff = max(eps, arr_max - arr_min)
+    else:
+        arr_min = np.quantile(arr, q, axis=0)
+        arr_max = np.quantile(arr, 1.0 - q, axis=0)
+        diff = np.maximum(eps, arr_max - arr_min)
+    arr = np.clip(arr, arr_min, arr_max)
+    return (arr - arr_min) / diff
+
+
 def imagenet_normalize(arr: np.ndarray) -> np.ndarray:
     mean_gray, std_gray = [0.485], [0.229]
     mean_rgb, std_rgb = [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
@@ -63,7 +82,7 @@ def cutout(
     if smooth > 0:
         alpha = gaussian(alpha, smooth)
         alpha = unsharp_mask(alpha, smooth, smooth * tight)
-    alpha = min_max_normalize(alpha)
+    alpha = quantile_normalize(alpha)
     rgba = naive_cutout(normalized_img, alpha)
     return alpha, rgba
 
