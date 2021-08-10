@@ -1,5 +1,7 @@
 ![carefree-learn][socialify-image]
 
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://demo.ailab.nolibox.com/)
+
 `carefree-learn-deploy` are some production implementations for [`carefree-learn`](https://github.com/carefree0910/carefree-learn).
 
 
