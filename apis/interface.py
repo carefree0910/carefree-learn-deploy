@@ -32,7 +32,7 @@ class LoadedSODModel(NamedTuple):
     path: str
 
 
-@app.post("/ai/sod")
+@app.post("/cv/sod")
 def sod(img_bytes: bytes = File(...), data: SODModel = Depends()) -> Response:
     try:
         api_bundle = model_zoo.get("sod")
