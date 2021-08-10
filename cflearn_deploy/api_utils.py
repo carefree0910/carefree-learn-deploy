@@ -26,12 +26,10 @@ def post_img_arr(
     img_arr: np.ndarray,
     *,
     uri: str,
-    port: str,
-    ip: str = "127.0.0.1",
     timeout: int = 8000,
     **kwargs: Any,
 ) -> Response:
     return requests.post(
-        f"http://{ip}:{port}{uri}",
+        f"https://apis.ailab.nolibox.com{uri}",
         **_get_img_post_kwargs(img_arr, timeout, **kwargs),
     )
