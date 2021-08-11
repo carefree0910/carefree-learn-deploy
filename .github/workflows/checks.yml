@@ -27,6 +27,7 @@ jobs:
         pip install mypy
         pip install black
         pip install types-requests
+        pip install types-PyYAML
     - name: black
       run: black . --check --diff
     - name: mypy
