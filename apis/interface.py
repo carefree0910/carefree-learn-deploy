@@ -38,6 +38,7 @@ with open(os.path.join(root, "config.yml")) as f:
 class SODModel(BaseModel):
     smooth: int = 0
     tight: float = 0.9
+    model_name: Optional[str] = None
     model_path: Optional[str] = None
 
 
@@ -52,7 +53,11 @@ def sod(img_bytes: bytes = File(...), data: SODModel = Depends()) -> Response:
         logging.debug("/cv/sod endpoint entered")
         t = time.time()
         api_bundle = model_zoo.get("sod")
-        model_path = data.model_path or os.path.join(model_root, "sod.onnx")
+        if data.model_path is not None:
+            model_path = data.model_path
+        else:
+            model_name = data.model_name or "sod"
+            model_path = os.path.join(model_root, f"{model_name}.onnx")
         if api_bundle is None or api_bundle.path != model_path:
             api = cflearn_deploy.SOD(model_path)
             api_bundle = model_zoo["sod"] = LoadedSODModel(api, model_path)
