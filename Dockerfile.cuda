@@ -1,0 +1,10 @@
+FROM mcr.microsoft.com/azureml/onnxruntime:latest-cuda
+ENV LC_ALL=C.UTF-8
+ENV LANG C.UTF-8
+
+WORKDIR /usr/home
+COPY . .
+RUN pip3 install --upgrade pip
+RUN pip3 install . --default-timeout=10000
+EXPOSE 80
+CMD ["uvicorn", "apis.interface:app", "--host", "0.0.0.0", "--port", "80"]
