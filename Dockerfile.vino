@@ -1,0 +1,10 @@
+FROM mcr.microsoft.com/azureml/onnxruntime:latest-openvino-cpu
+ENV LC_ALL=C.UTF-8
+ENV LANG C.UTF-8
+
+WORKDIR /usr/home
+COPY . .
+RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install .
+EXPOSE 80
+CMD ["uvicorn", "apis.interface:app", "--host", "0.0.0.0", "--port", "80"]
