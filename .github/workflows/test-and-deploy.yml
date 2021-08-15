@@ -88,10 +88,10 @@ jobs:
         with:
           images: nolibox/carefree-learn-deploy
           tags: |
-            type=ref,event=branch,suffix=.cuda
-            type=ref,event=pr,suffix=.cuda
-            type=semver,pattern={{version}},suffix=.cuda
-            type=semver,pattern={{major}}.{{minor}},suffix=.cuda
+            type=ref,event=branch,suffix=-cuda
+            type=ref,event=pr,suffix=-cuda
+            type=semver,pattern={{version}},suffix=-cuda
+            type=semver,pattern={{major}}.{{minor}},suffix=-cuda
       - name: Cache Docker layers
         uses: actions/cache@v2
         with:
@@ -131,10 +131,10 @@ jobs:
         with:
           images: nolibox/carefree-learn-deploy
           tags: |
-            type=ref,event=branch,suffix=.vino
-            type=ref,event=pr,suffix=.vino
-            type=semver,pattern={{version}},suffix=.vino
-            type=semver,pattern={{major}}.{{minor}},suffix=.vino
+            type=ref,event=branch,suffix=-vino
+            type=ref,event=pr,suffix=-vino
+            type=semver,pattern={{version}},suffix=-vino
+            type=semver,pattern={{major}}.{{minor}},suffix=-vino
       - name: Cache Docker layers
         uses: actions/cache@v2
         with:
