@@ -16,10 +16,12 @@ class ONNX:
             path,
             options,
             [
+                "TensorrtExecutionProvider",
                 "CUDAExecutionProvider",
                 "OpenVINOExecutionProvider",
             ],
             [
+                {},
                 {},
                 {"device_type": "CPU_FP32"},
             ],

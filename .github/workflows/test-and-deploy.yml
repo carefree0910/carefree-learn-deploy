@@ -49,6 +49,9 @@ jobs:
           - name: OpenVINO
             suffix: "-vino"
             file: Dockerfile.vino
+          - name: TensorRT
+            suffix: "-trt"
+            file: Dockerfile.trt
 
     steps:
       - name: Checkout
