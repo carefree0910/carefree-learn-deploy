@@ -21,10 +21,17 @@ class SOD:
         options = SessionOptions()
         options.intra_op_num_threads = 1
         options.graph_optimization_level = GraphOptimizationLevel.ORT_ENABLE_ALL
-        self.sess = InferenceSession(onnx_path, options, ["CUDAExecutionProvider"])
-        self.sess.set_providers(
-            ["OpenVINOExecutionProvider"],
-            [{"device_type": "CPU_FP32"}],
+        self.sess = InferenceSession(
+            onnx_path,
+            options,
+            [
+                "CUDAExecutionProvider",
+                "OpenVINOExecutionProvider",
+            ],
+            [
+                {},
+                {"device_type": "CPU_FP32"},
+            ]
         )
         self.normalize = ToNormalizedArray()
         self.transform = Compose([RescaleT(rescale_size), self.normalize])
