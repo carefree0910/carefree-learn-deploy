@@ -22,7 +22,7 @@ class ONNX:
             [
                 {},
                 {"device_type": "CPU_FP32"},
-            ]
+            ],
         )
 
     def run(self, inp: Union[np.ndarray, Dict[str, np.ndarray]]) -> np.ndarray:
