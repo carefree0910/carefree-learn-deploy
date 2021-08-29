@@ -22,9 +22,9 @@ from cflearn_deploy.toolkit import np_to_bytes
 
 
 app = FastAPI()
-model_zoo: Dict[str, Any] = {}
 root = os.path.dirname(__file__)
-model_root = os.path.join(root, "models")
+
+# logging
 logging_root = os.path.join(root, "logs")
 os.makedirs(logging_root, exist_ok=True)
 with open(os.path.join(root, "config.yml")) as f:
@@ -37,6 +37,13 @@ with open(os.path.join(root, "config.yml")) as f:
 
 # db
 engine = sqlite.get_engine(echo=False)
+
+# models
+model_zoo: Dict[str, Any] = {}
+model_root = os.path.join(root, "models")
+
+
+# sod
 
 
 class SODModel(BaseModel):
