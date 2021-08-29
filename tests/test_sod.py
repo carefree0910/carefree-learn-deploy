@@ -15,10 +15,9 @@ class TestSOD(unittest.TestCase):
         test_src = np.random.random([320, 320, 3]).astype(np.float32)
         test_src2 = np.random.random([224, 224, 3]).astype(np.float32)
         sod = SOD(os.path.join(current_folder, "models", "test.onnx"))
-        sod._get_alpha(test_src, rescale=False)
-        sod._get_alpha(test_src2, rescale=True)
+        sod._get_alpha(test_src)
         with self.assertRaises(Exception):
-            sod._get_alpha(test_src2, rescale=False)
+            sod._get_alpha(test_src2)
         sod.run(np_to_bytes(test_src))
         with self.assertRaises(Exception):
             sod.run(np_to_bytes(test_src2))
