@@ -23,7 +23,6 @@ from pymilvus_orm import DataType
 from pymilvus_orm import Collection
 from pymilvus_orm import FieldSchema
 from pymilvus_orm import CollectionSchema
-from cflearn_deploy.data import sqlite
 from cflearn_deploy.toolkit import np_to_bytes
 
 
@@ -40,9 +39,6 @@ with open(os.path.join(root, "config.yml")) as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
     config["handlers"]["file"]["filename"] = log_path
     logging.config.dictConfig(config)
-
-# db
-engine = sqlite.get_engine(echo=False)
 
 # models
 model_zoo: Dict[str, Any] = {}
