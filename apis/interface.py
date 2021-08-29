@@ -58,7 +58,11 @@ class LoadedSODModel(NamedTuple):
     path: str
 
 
-@app.post("/cv/sod")
+class SODResponse(BaseModel):
+    content: bytes
+
+
+@app.post("/cv/sod", response_model=SODResponse)
 def sod(img_bytes: bytes = File(...), data: SODModel = Depends()) -> Response:
     try:
         logging.debug("/cv/sod endpoint entered")
