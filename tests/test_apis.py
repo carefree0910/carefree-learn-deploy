@@ -1,4 +1,5 @@
 import os
+import json
 import unittest
 
 import numpy as np
@@ -19,6 +20,16 @@ class TestAPIs(unittest.TestCase):
         kwargs = _get_img_post_kwargs(img, model_path=model_path)
         response = client.post("/cv/sod", **kwargs)
         assert response.status_code == 200
+
+    def test_cbir(self) -> None:
+        img = np.random.random([224, 224, 3])
+        model_path = os.path.join(current_folder, "models", "cbir_test.onnx")
+        kwargs = _get_img_post_kwargs(img, model_path=model_path, skip_milvus=True)
+        response = client.post("/cv/cbir", **kwargs)
+        assert response.status_code == 200
+        rs = json.loads(response.content)
+        self.assertSequenceEqual(rs["indices"], [0])
+        self.assertSequenceEqual(rs["distances"], [0])
 
 
 if __name__ == "__main__":
