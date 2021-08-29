@@ -3,8 +3,6 @@ import io
 import numpy as np
 
 from PIL import Image
-from typing import Any
-from typing import List
 from typing import Tuple
 from skimage.filters import gaussian
 from skimage.filters import unsharp_mask
@@ -98,21 +96,3 @@ def np_to_bytes(img_arr: np.ndarray) -> bytes:
     bytes_io = io.BytesIO()
     Image.fromarray(img_arr).save(bytes_io, format="PNG")
     return bytes_io.getvalue()
-
-
-class Compose:
-    def __init__(self, transforms: List[Any]):
-        self.transforms = transforms
-
-    def __call__(self, inp: Any) -> Any:
-        for t in self.transforms:
-            inp = t(inp)
-        return inp
-
-    def __repr__(self) -> str:
-        format_string = self.__class__.__name__ + "("
-        for t in self.transforms:
-            format_string += "\n"
-            format_string += "    {0}".format(t)
-        format_string += "\n)"
-        return format_string
