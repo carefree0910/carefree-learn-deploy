@@ -108,6 +108,7 @@ class CBIRModel(BaseModel):
     field_name: str = "latent_code"
     model_name: Optional[str] = None
     model_path: Optional[str] = None
+    skip_milvus: bool = False
 
 
 class LoadedEncoder(NamedTuple):
@@ -136,6 +137,8 @@ def cbir(img_bytes: bytes = File(...), data: CBIRModel = Depends()) -> CBIRRespo
             api = cflearn_deploy.ImageEncoder(model_path)
             api_bundle = model_zoo[key] = LoadedEncoder(api, model_path)
         latent_code = api_bundle.api.run(img_bytes)
+        if data.skip_milvus:
+            return CBIRResponse(indices=[0], distances=[0])
         t2 = time.time()
         collection = get_cbir_collection()
         t3 = time.time()
