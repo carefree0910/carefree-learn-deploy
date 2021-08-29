@@ -14,7 +14,7 @@ class TestSOD(unittest.TestCase):
     def test_sod(self) -> None:
         test_src = np.random.random([320, 320, 3]).astype(np.float32)
         test_src2 = np.random.random([224, 224, 3]).astype(np.float32)
-        sod = SOD(os.path.join(current_folder, "models", "test.onnx"))
+        sod = SOD(os.path.join(current_folder, "models", "sod_test.onnx"))
         sod._get_alpha(test_src)
         with self.assertRaises(Exception):
             sod._get_alpha(test_src2)

@@ -15,7 +15,7 @@ current_folder = os.path.dirname(__file__)
 class TestAPIs(unittest.TestCase):
     def test_sod(self) -> None:
         img = np.random.random([320, 320, 3])
-        model_path = os.path.join(current_folder, "models", "test.onnx")
+        model_path = os.path.join(current_folder, "models", "sod_test.onnx")
         kwargs = _get_img_post_kwargs(img, model_path=model_path)
         response = client.post("/cv/sod", **kwargs)
         assert response.status_code == 200
