@@ -152,7 +152,7 @@ def cbir(img_bytes: bytes = File(...), data: CBIRModel = Depends()) -> CBIRRespo
         hits = res[0]
         t4 = time.time()
         logging.debug(
-            f"/cv/cbir elapsed time : {t3 - t1:8.6f}s "
+            f"/cv/cbir elapsed time : {t4 - t1:8.6f}s "
             f"| onnx : {t2 - t1:8.6f} "
             f"| milvus_init : {t3 - t2:8.6f} "
             f"| milvus : {t4 - t3:8.6f} |"
