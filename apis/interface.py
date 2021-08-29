@@ -67,15 +67,16 @@ def sod(img_bytes: bytes = File(...), data: SODModel = Depends()) -> Response:
     try:
         logging.debug("/cv/sod endpoint entered")
         t = time.time()
-        api_bundle = model_zoo.get("sod")
+        key = "sod"
+        api_bundle = model_zoo.get(key)
         if data.model_path is not None:
             model_path = data.model_path
         else:
-            model_name = data.model_name or "sod"
+            model_name = data.model_name or key
             model_path = os.path.join(model_root, f"{model_name}.onnx")
         if api_bundle is None or api_bundle.path != model_path:
             api = cflearn_deploy.SOD(model_path)
-            api_bundle = model_zoo["sod"] = LoadedSODModel(api, model_path)
+            api_bundle = model_zoo[key] = LoadedSODModel(api, model_path)
         rgba = api_bundle.api.run(img_bytes, smooth=data.smooth, tight=data.tight)
         logging.debug(f"/cv/sod elapsed time : {time.time() - t:8.6f}s")
         return Response(content=np_to_bytes(rgba), media_type="image/png")
