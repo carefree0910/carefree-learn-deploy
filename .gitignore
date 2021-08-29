@@ -10,4 +10,5 @@ pip-wheel-metadata
 dist/*
 **/mlruns/*
 *.zip
+apis/data/*
 apis/models/*.onnx
