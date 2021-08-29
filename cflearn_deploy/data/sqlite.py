@@ -21,8 +21,8 @@ class ImageItem(SQLModel, table=True):  # type: ignore
     bytes: bytes
 
 
-def get_engine(*, echo: bool, **kwargs: Any) -> Engine:
-    sqlite_url = f"sqlite:///{SQLITE_FILE}"
+def get_engine(*, file: Optional[str] = None, echo: bool, **kwargs: Any) -> Engine:
+    sqlite_url = f"sqlite:///{file or SQLITE_FILE}"
     kwargs.setdefault("connect_args", {"check_same_thread": False})
     return create_engine(sqlite_url, echo=echo, **kwargs)
 
