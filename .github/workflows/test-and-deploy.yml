@@ -46,9 +46,6 @@ jobs:
           - name: CUDA
             suffix: "-cuda"
             file: Dockerfile.cuda
-          - name: TensorRT
-            suffix: "-trt"
-            file: Dockerfile.trt
 
     steps:
       - name: Checkout
