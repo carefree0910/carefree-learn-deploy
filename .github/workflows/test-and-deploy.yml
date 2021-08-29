@@ -46,9 +46,6 @@ jobs:
           - name: CUDA
             suffix: "-cuda"
             file: Dockerfile.cuda
-          - name: OpenVINO
-            suffix: "-vino"
-            file: Dockerfile.vino
           - name: TensorRT
             suffix: "-trt"
             file: Dockerfile.trt
