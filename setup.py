@@ -10,6 +10,7 @@ setup(
     version=VERSION,
     packages=find_packages(exclude=("tests",)),
     install_requires=[
+        "tqdm",
         "pymilvus-orm==2.0.0rc4",
         "sqlmodel",
         "PyYaml",
