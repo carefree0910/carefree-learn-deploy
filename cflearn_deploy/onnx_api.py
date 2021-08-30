@@ -2,9 +2,15 @@ import numpy as np
 
 from typing import Dict
 from typing import Union
-from onnxruntime import SessionOptions
-from onnxruntime import InferenceSession
-from onnxruntime import GraphOptimizationLevel
+
+try:
+    from onnxruntime import SessionOptions
+    from onnxruntime import InferenceSession
+    from onnxruntime import GraphOptimizationLevel
+except ImportError:
+    SessionOptions = None
+    InferenceSession = None
+    GraphOptimizationLevel = None
 
 
 class ONNX:
