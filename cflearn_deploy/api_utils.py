@@ -30,6 +30,6 @@ def post_img_arr(
     **kwargs: Any,
 ) -> Response:
     return requests.post(
-        f"https://apis.ailab.nolibox.com{uri}",
+        f"http://carefree-learn-deploy:80{uri}",
         **_get_img_post_kwargs(img_arr, timeout, **kwargs),
     )
