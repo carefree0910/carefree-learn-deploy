@@ -1,3 +1,5 @@
+apis/data
+apis/logs
 apis/models
 .*
 carefree_learn_deploy.egg-info

@@ -1,5 +1,5 @@
 FROM python:3.6-slim
-WORKDIR /usr/home
+WORKDIR /carefree-learn-deploy
 COPY . .
 RUN pip install .
 RUN pip install -r requirements.txt

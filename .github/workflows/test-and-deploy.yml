@@ -42,10 +42,10 @@ jobs:
         include:
           - name: CPU
             suffix: ""
-            file: Dockerfile
+            file: dockerfiles/Dockerfile
           - name: CUDA
             suffix: "-cuda"
-            file: Dockerfile.cuda
+            file: dockerfiles/Dockerfile.cuda
 
     steps:
       - name: Checkout
