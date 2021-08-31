@@ -97,8 +97,8 @@ def get_cbir_collection() -> Collection:
         FieldSchema(name="id", dtype=DataType.INT64, is_primary=True),
         FieldSchema(name="latent_code", dtype=DataType.FLOAT_VECTOR, dim=384),
     ]
-    schema = CollectionSchema(fields=fields, description="dino vit collection")
-    return Collection(name="dino_vit", schema=schema)
+    schema = CollectionSchema(fields=fields, description="cbir collection")
+    return Collection(name="cbir", schema=schema)
 
 
 class CBIRModel(BaseModel):
@@ -111,7 +111,7 @@ class CBIRModel(BaseModel):
     skip_milvus: bool = False
 
 
-class LoadedEncoder(NamedTuple):
+class LoadedImageEncoder(NamedTuple):
     api: cflearn_deploy.ImageEncoder
     path: str
 
@@ -126,7 +126,7 @@ def cbir(img_bytes: bytes = File(...), data: CBIRModel = Depends()) -> CBIRRespo
     try:
         logging.debug("/cv/cbir endpoint entered")
         t1 = time.time()
-        key = "dino_vit"
+        key = "cbir"
         api_bundle = model_zoo.get(key)
         if data.model_path is not None:
             model_path = data.model_path
@@ -135,7 +135,7 @@ def cbir(img_bytes: bytes = File(...), data: CBIRModel = Depends()) -> CBIRRespo
             model_path = os.path.join(model_root, f"{model_name}.onnx")
         if api_bundle is None or api_bundle.path != model_path:
             api = cflearn_deploy.ImageEncoder(model_path)
-            api_bundle = model_zoo[key] = LoadedEncoder(api, model_path)
+            api_bundle = model_zoo[key] = LoadedImageEncoder(api, model_path)
         latent_code = api_bundle.api.run(img_bytes)
         if data.skip_milvus:
             return CBIRResponse(indices=[0], distances=[0])
