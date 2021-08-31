@@ -92,6 +92,7 @@ def sod(img_bytes: bytes = File(...), data: SODModel = Depends()) -> Response:
 
 
 def _milvus_search(
+    name: str,
     collection: Collection,
     data: Any,
     latent_code: Any,
@@ -109,7 +110,7 @@ def _milvus_search(
     hits = res[0]
     t4 = time.time()
     logging.debug(
-        f"/cv/cbir elapsed time : {t4 - t1:8.6f}s "
+        f"/cv/{name} elapsed time : {t4 - t1:8.6f}s "
         f"| onnx : {t2 - t1:8.6f} "
         f"| milvus_init : {t3 - t2:8.6f} "
         f"| milvus : {t4 - t3:8.6f} |"
@@ -170,7 +171,7 @@ def cbir(img_bytes: bytes = File(...), data: CBIRModel = Depends()) -> CBIRRespo
             return CBIRResponse(indices=[0], distances=[0])
         t2 = time.time()
         collection = get_cbir_collection()
-        hits = _milvus_search(collection, data, latent_code, t1, t2)
+        hits = _milvus_search("cbir", collection, data, latent_code, t1, t2)
         return CBIRResponse(
             indices=[hit.id for hit in hits],
             distances=[hit.distance for hit in hits],
@@ -188,7 +189,7 @@ def get_tbir_collection() -> Collection:
     connections.connect(host="localhost", port="19530")
     fields = [
         FieldSchema(name="id", dtype=DataType.INT64, is_primary=True),
-        FieldSchema(name="latent_code", dtype=DataType.FLOAT_VECTOR, dim=384),
+        FieldSchema(name="latent_code", dtype=DataType.FLOAT_VECTOR, dim=512),
     ]
     schema = CollectionSchema(fields=fields, description="tbir collection")
     return Collection(name="tbir", schema=schema)
@@ -206,7 +207,7 @@ class TBIRModel(BaseModel):
 
 
 class LoadedTextEncoder(NamedTuple):
-    api: cflearn_deploy.ImageEncoder
+    api: cflearn_deploy.TextEncoder
     model_path: str
     tokenizer_path: str
 
@@ -233,7 +234,11 @@ def tbir(text: List[str], data: TBIRModel = Depends()) -> TBIRResponse:
         else:
             model_name = data.model_name or key
             tokenizer_path = os.path.join(model_root, f"{model_name}_tokenizer.pkl")
-        if api_bundle is None or api_bundle.path != model_path:
+        if (
+            api_bundle is None
+            or api_bundle.model_path != model_path
+            or api_bundle.tokenizer_path != tokenizer_path
+        ):
             api = cflearn_deploy.TextEncoder(model_path, tokenizer_path)
             api_bundle = LoadedTextEncoder(api, model_path, tokenizer_path)
             model_zoo[key] = api_bundle
@@ -242,7 +247,7 @@ def tbir(text: List[str], data: TBIRModel = Depends()) -> TBIRResponse:
             return TBIRResponse(indices=[0], distances=[0])
         t2 = time.time()
         collection = get_tbir_collection()
-        hits = _milvus_search(collection, data, latent_code, t1, t2)
+        hits = _milvus_search("tbir", collection, data, latent_code, t1, t2)
         return TBIRResponse(
             indices=[hit.id for hit in hits],
             distances=[hit.distance for hit in hits],
