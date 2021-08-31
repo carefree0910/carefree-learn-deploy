@@ -88,6 +88,35 @@ def sod(img_bytes: bytes = File(...), data: SODModel = Depends()) -> Response:
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# milvus
+
+
+def _milvus_search(
+    collection: Collection,
+    data: Any,
+    latent_code: Any,
+    t1: float,
+    t2: float,
+) -> List[Any]:
+    t3 = time.time()
+    res = collection.search(
+        [latent_code.tolist()],
+        data.field_name,
+        dict(metric_type=data.metric_type, params={"nprobe": data.nprobe}),
+        data.top_k,
+        output_fields=["id"],
+    )
+    hits = res[0]
+    t4 = time.time()
+    logging.debug(
+        f"/cv/cbir elapsed time : {t4 - t1:8.6f}s "
+        f"| onnx : {t2 - t1:8.6f} "
+        f"| milvus_init : {t3 - t2:8.6f} "
+        f"| milvus : {t4 - t3:8.6f} |"
+    )
+    return hits
+
+
 # cbir
 
 
@@ -141,22 +170,7 @@ def cbir(img_bytes: bytes = File(...), data: CBIRModel = Depends()) -> CBIRRespo
             return CBIRResponse(indices=[0], distances=[0])
         t2 = time.time()
         collection = get_cbir_collection()
-        t3 = time.time()
-        res = collection.search(
-            [latent_code.tolist()],
-            data.field_name,
-            dict(metric_type=data.metric_type, params={"nprobe": data.nprobe}),
-            data.top_k,
-            output_fields=["id"],
-        )
-        hits = res[0]
-        t4 = time.time()
-        logging.debug(
-            f"/cv/cbir elapsed time : {t4 - t1:8.6f}s "
-            f"| onnx : {t2 - t1:8.6f} "
-            f"| milvus_init : {t3 - t2:8.6f} "
-            f"| milvus : {t4 - t3:8.6f} |"
-        )
+        hits = _milvus_search(collection, data, latent_code, t1, t2)
         return CBIRResponse(
             indices=[hit.id for hit in hits],
             distances=[hit.distance for hit in hits],
@@ -228,22 +242,7 @@ def tbir(text: List[str], data: TBIRModel = Depends()) -> TBIRResponse:
             return TBIRResponse(indices=[0], distances=[0])
         t2 = time.time()
         collection = get_tbir_collection()
-        t3 = time.time()
-        res = collection.search(
-            [latent_code.tolist()],
-            data.field_name,
-            dict(metric_type=data.metric_type, params={"nprobe": data.nprobe}),
-            data.top_k,
-            output_fields=["id"],
-        )
-        hits = res[0]
-        t4 = time.time()
-        logging.debug(
-            f"/cv/tbir elapsed time : {t4 - t1:8.6f}s "
-            f"| onnx : {t2 - t1:8.6f} "
-            f"| milvus_init : {t3 - t2:8.6f} "
-            f"| milvus : {t4 - t3:8.6f} |"
-        )
+        hits = _milvus_search(collection, data, latent_code, t1, t2)
         return TBIRResponse(
             indices=[hit.id for hit in hits],
             distances=[hit.distance for hit in hits],
