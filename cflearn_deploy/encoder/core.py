@@ -1,10 +1,28 @@
+import dill
+
 import numpy as np
+
+from typing import List
 
 from ..toolkit import bytes_to_np
 from ..onnx_api import ONNX
 from ..data.transforms import ToCHW
 from ..data.transforms import Compose
 from ..data.transforms import ImagenetNormalize
+
+
+class TextEncoder:
+    def __init__(self, onnx_path: str, tokenizer_path: str):
+        self.onnx = ONNX(onnx_path)
+        with open(tokenizer_path, "rb") as f:
+            self.tokenizer = dill.load(f)
+
+    def _get_code(self, text: List[str]) -> np.ndarray:
+        tokens = self.tokenizer(text)
+        return self.onnx.run(tokens)[0][0]
+
+    def run(self, text: List[str]) -> np.ndarray:
+        return self._get_code(text)
 
 
 class ImageEncoder:
@@ -22,5 +40,6 @@ class ImageEncoder:
 
 
 __all__ = [
+    "TextEncoder",
     "ImageEncoder",
 ]
