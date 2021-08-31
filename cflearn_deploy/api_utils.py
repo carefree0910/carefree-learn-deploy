@@ -12,6 +12,10 @@ from .toolkit import np_to_bytes
 prefix = "http://carefree-learn-deploy:80"
 
 
+def post_json(body: Any, *, uri: str, timeout: int = 8000, **kwargs: Any) -> Response:
+    return requests.post(f"{prefix}{uri}", json=body, params=kwargs, timeout=timeout)
+
+
 def _get_img_post_kwargs(
     img_arr: np.ndarray,
     timeout: int = 8000,

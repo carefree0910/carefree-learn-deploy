@@ -167,6 +167,93 @@ def cbir(img_bytes: bytes = File(...), data: CBIRModel = Depends()) -> CBIRRespo
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# tbir
+
+
+def get_tbir_collection() -> Collection:
+    connections.connect(host="localhost", port="19530")
+    fields = [
+        FieldSchema(name="id", dtype=DataType.INT64, is_primary=True),
+        FieldSchema(name="latent_code", dtype=DataType.FLOAT_VECTOR, dim=384),
+    ]
+    schema = CollectionSchema(fields=fields, description="tbir collection")
+    return Collection(name="tbir", schema=schema)
+
+
+class TBIRModel(BaseModel):
+    top_k: int = 10
+    nprobe: int = 16
+    metric_type: str = "L2"
+    field_name: str = "latent_code"
+    model_name: Optional[str] = None
+    model_path: Optional[str] = None
+    tokenizer_path: Optional[str] = None
+    skip_milvus: bool = False
+
+
+class LoadedTextEncoder(NamedTuple):
+    api: cflearn_deploy.ImageEncoder
+    model_path: str
+    tokenizer_path: str
+
+
+class TBIRResponse(BaseModel):
+    indices: List[int]
+    distances: List[float]
+
+
+@app.post("/cv/tbir", response_model=TBIRResponse)
+def tbir(text: List[str], data: TBIRModel = Depends()) -> TBIRResponse:
+    try:
+        logging.debug("/cv/tbir endpoint entered")
+        t1 = time.time()
+        key = "tbir"
+        api_bundle = model_zoo.get(key)
+        if data.model_path is not None:
+            model_path = data.model_path
+        else:
+            model_name = data.model_name or key
+            model_path = os.path.join(model_root, f"{model_name}.onnx")
+        if data.tokenizer_path is not None:
+            tokenizer_path = data.tokenizer_path
+        else:
+            model_name = data.model_name or key
+            tokenizer_path = os.path.join(model_root, f"{model_name}_tokenizer.pkl")
+        if api_bundle is None or api_bundle.path != model_path:
+            api = cflearn_deploy.TextEncoder(model_path, tokenizer_path)
+            api_bundle = LoadedTextEncoder(api, model_path, tokenizer_path)
+            model_zoo[key] = api_bundle
+        latent_code = api_bundle.api.run(text)
+        if data.skip_milvus:
+            return TBIRResponse(indices=[0], distances=[0])
+        t2 = time.time()
+        collection = get_tbir_collection()
+        t3 = time.time()
+        res = collection.search(
+            [latent_code.tolist()],
+            data.field_name,
+            dict(metric_type=data.metric_type, params={"nprobe": data.nprobe}),
+            data.top_k,
+            output_fields=["id"],
+        )
+        hits = res[0]
+        t4 = time.time()
+        logging.debug(
+            f"/cv/tbir elapsed time : {t4 - t1:8.6f}s "
+            f"| onnx : {t2 - t1:8.6f} "
+            f"| milvus_init : {t3 - t2:8.6f} "
+            f"| milvus : {t4 - t3:8.6f} |"
+        )
+        return TBIRResponse(
+            indices=[hit.id for hit in hits],
+            distances=[hit.distance for hit in hits],
+        )
+    except Exception as err:
+        logging.exception(err)
+        e = sys.exc_info()[1]
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 if __name__ == "__main__":
     import uvicorn
 
