@@ -10,6 +10,8 @@ setup(
     version=VERSION,
     packages=find_packages(exclude=("tests",)),
     install_requires=[
+        "ftfy",
+        "regex",
         "dill",
         "tqdm",
         "pymilvus-orm==2.0.0rc4",
