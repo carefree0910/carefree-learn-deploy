@@ -11,4 +11,5 @@ dist/*
 **/mlruns/*
 *.zip
 apis/data/*
+apis/models/*.pkl
 apis/models/*.onnx
