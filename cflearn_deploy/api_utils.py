@@ -9,6 +9,9 @@ from requests import Response
 from .toolkit import np_to_bytes
 
 
+prefix = "http://carefree-learn-deploy:80"
+
+
 def _get_img_post_kwargs(
     img_arr: np.ndarray,
     timeout: int = 8000,
@@ -30,6 +33,6 @@ def post_img_arr(
     **kwargs: Any,
 ) -> Response:
     return requests.post(
-        f"http://carefree-learn-deploy:80{uri}",
+        f"{prefix}{uri}",
         **_get_img_post_kwargs(img_arr, timeout, **kwargs),
     )
