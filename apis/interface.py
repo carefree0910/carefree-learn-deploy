@@ -262,7 +262,6 @@ def tbir(text: List[str], data: TBIRModel = Depends()) -> TBIRResponse:
 
 
 class AdaINModel(BaseModel):
-    q: float = 0.01
     model_name: Optional[str] = None
     model_path: Optional[str] = None
 
@@ -295,7 +294,7 @@ def adain(
         if api_bundle is None or api_bundle.path != model_path:
             api = cflearn_deploy.AdaINStylizer(model_path)
             api_bundle = model_zoo[key] = LoadedAdaINModel(api, model_path)
-        stylized = api_bundle.api.run(img_bytes0, img_bytes1, data.q)
+        stylized = api_bundle.api.run(img_bytes0, img_bytes1)
         logging.debug(f"/cv/adain elapsed time : {time.time() - t:8.6f}s")
         return Response(content=np_to_bytes(stylized), media_type="image/png")
     except Exception as err:
