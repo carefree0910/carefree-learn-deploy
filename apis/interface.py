@@ -65,7 +65,7 @@ class SODResponse(BaseModel):
 
 
 @app.post("/cv/sod", response_model=SODResponse)
-def sod(img_bytes: bytes = File(...), data: SODModel = Depends()) -> Response:
+def sod(img_bytes0: bytes = File(...), data: SODModel = Depends()) -> Response:
     try:
         logging.debug("/cv/sod endpoint entered")
         t = time.time()
@@ -79,7 +79,7 @@ def sod(img_bytes: bytes = File(...), data: SODModel = Depends()) -> Response:
         if api_bundle is None or api_bundle.path != model_path:
             api = cflearn_deploy.SOD(model_path)
             api_bundle = model_zoo[key] = LoadedSODModel(api, model_path)
-        rgba = api_bundle.api.run(img_bytes, smooth=data.smooth, tight=data.tight)
+        rgba = api_bundle.api.run(img_bytes0, smooth=data.smooth, tight=data.tight)
         logging.debug(f"/cv/sod elapsed time : {time.time() - t:8.6f}s")
         return Response(content=np_to_bytes(rgba), media_type="image/png")
     except Exception as err:
@@ -152,7 +152,7 @@ class CBIRResponse(BaseModel):
 
 
 @app.post("/cv/cbir", response_model=CBIRResponse)
-def cbir(img_bytes: bytes = File(...), data: CBIRModel = Depends()) -> CBIRResponse:
+def cbir(img_bytes0: bytes = File(...), data: CBIRModel = Depends()) -> CBIRResponse:
     try:
         logging.debug("/cv/cbir endpoint entered")
         t1 = time.time()
@@ -166,7 +166,7 @@ def cbir(img_bytes: bytes = File(...), data: CBIRModel = Depends()) -> CBIRRespo
         if api_bundle is None or api_bundle.path != model_path:
             api = cflearn_deploy.ImageEncoder(model_path)
             api_bundle = model_zoo[key] = LoadedImageEncoder(api, model_path)
-        latent_code = api_bundle.api.run(img_bytes)
+        latent_code = api_bundle.api.run(img_bytes0)
         if data.skip_milvus:
             return CBIRResponse(indices=[0], distances=[0])
         t2 = time.time()

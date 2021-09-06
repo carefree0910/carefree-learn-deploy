@@ -17,26 +17,24 @@ def post_json(body: Any, *, uri: str, timeout: int = 8000, **kwargs: Any) -> Res
 
 
 def _get_img_post_kwargs(
-    img_arr: np.ndarray,
+    *img_arr: np.ndarray,
     timeout: int = 8000,
     **kwargs: Any,
 ) -> Dict[str, Any]:
-    img_bytes = np_to_bytes(img_arr)
-    return dict(
-        files={"img_bytes": ("", img_bytes, "image/png")},
-        params=kwargs,
-        timeout=timeout,
-    )
+    files = {
+        f"img_bytes{i}": ("", np_to_bytes(arr), "image/png")
+        for i, arr in enumerate(img_arr)
+    }
+    return dict(files=files, params=kwargs, timeout=timeout)
 
 
 def post_img_arr(
-    img_arr: np.ndarray,
-    *,
+    *img_arr: np.ndarray,
     uri: str,
     timeout: int = 8000,
     **kwargs: Any,
 ) -> Response:
     return requests.post(
         f"{prefix}{uri}",
-        **_get_img_post_kwargs(img_arr, timeout, **kwargs),
+        **_get_img_post_kwargs(*img_arr, timeout=timeout, **kwargs),
     )
