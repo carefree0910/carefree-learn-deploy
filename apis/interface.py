@@ -258,6 +258,52 @@ def tbir(text: List[str], data: TBIRModel = Depends()) -> TBIRResponse:
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# adain
+
+
+class AdaINModel(BaseModel):
+    q: float = 0.01
+    model_name: Optional[str] = None
+    model_path: Optional[str] = None
+
+
+class LoadedAdaINModel(NamedTuple):
+    api: cflearn_deploy.AdaINStylizer
+    path: str
+
+
+class AdaINResponse(BaseModel):
+    content: bytes
+
+
+@app.post("/cv/adain", response_model=AdaINResponse)
+def adain(
+    img_bytes0: bytes = File(...),
+    img_bytes1: bytes = File(...),
+    data: AdaINModel = Depends(),
+) -> Response:
+    try:
+        logging.debug("/cv/adain endpoint entered")
+        t = time.time()
+        key = "adain"
+        api_bundle = model_zoo.get(key)
+        if data.model_path is not None:
+            model_path = data.model_path
+        else:
+            model_name = data.model_name or key
+            model_path = os.path.join(model_root, f"{model_name}.onnx")
+        if api_bundle is None or api_bundle.path != model_path:
+            api = cflearn_deploy.AdaINStylizer(model_path)
+            api_bundle = model_zoo[key] = LoadedAdaINModel(api, model_path)
+        stylized = api_bundle.api.run(img_bytes0, img_bytes1, data.q)
+        logging.debug(f"/cv/adain elapsed time : {time.time() - t:8.6f}s")
+        return Response(content=np_to_bytes(stylized), media_type="image/png")
+    except Exception as err:
+        logging.exception(err)
+        e = sys.exc_info()[1]
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 if __name__ == "__main__":
     import uvicorn
 
