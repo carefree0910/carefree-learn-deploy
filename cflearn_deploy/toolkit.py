@@ -16,6 +16,12 @@ def sigmoid(arr: np.ndarray) -> np.ndarray:
     return 1.0 / (1.0 + np.exp(-arr))
 
 
+def softmax(arr: np.ndarray) -> np.ndarray:
+    logits = arr - np.max(arr, axis=1, keepdims=True)
+    exp = np.exp(logits)
+    return exp / exp.sum(1, keepdims=True)
+
+
 def min_max_normalize(arr: np.ndarray, *, global_norm: bool = True) -> np.ndarray:
     eps = 1.0e-8
     if global_norm:
