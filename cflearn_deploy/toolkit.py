@@ -12,6 +12,10 @@ def is_gray(arr: np.ndarray) -> bool:
     return arr.shape[-1] == 1
 
 
+def sigmoid(arr: np.ndarray) -> np.ndarray:
+    return 1.0 / (1.0 + np.exp(-arr))
+
+
 def min_max_normalize(arr: np.ndarray, *, global_norm: bool = True) -> np.ndarray:
     eps = 1.0e-8
     if global_norm:
