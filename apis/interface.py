@@ -303,6 +303,47 @@ def adain(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# clf
+
+
+class ClfModel(BaseModel):
+    model_name: Optional[str] = None
+    model_path: Optional[str] = None
+
+
+class LoadedClfModel(NamedTuple):
+    api: cflearn_deploy.Clf
+    path: str
+
+
+class ClfResponse(BaseModel):
+    probabilities: List[float]
+
+
+@app.post("/cv/clf", response_model=ClfResponse)
+def clf(img_bytes0: bytes = File(...), data: ClfModel = Depends()) -> ClfResponse:
+    try:
+        logging.debug("/cv/clf endpoint entered")
+        t = time.time()
+        key = "clf"
+        api_bundle = model_zoo.get(key)
+        if data.model_path is not None:
+            model_path = data.model_path
+        else:
+            model_name = data.model_name or key
+            model_path = os.path.join(model_root, f"{model_name}.onnx")
+        if api_bundle is None or api_bundle.path != model_path:
+            api = cflearn_deploy.Clf(model_path)
+            api_bundle = model_zoo[key] = LoadedClfModel(api, model_path)
+        probabilities = api_bundle.api.run(img_bytes0).tolist()
+        logging.debug(f"/cv/clf elapsed time : {time.time() - t:8.6f}s")
+        return ClfResponse(probabilities=probabilities)
+    except Exception as err:
+        logging.exception(err)
+        e = sys.exc_info()[1]
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 if __name__ == "__main__":
     import uvicorn
 
