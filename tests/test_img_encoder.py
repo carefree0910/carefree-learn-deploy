@@ -4,7 +4,7 @@ import unittest
 import numpy as np
 
 from cflearn_deploy.toolkit import np_to_bytes
-from cflearn_deploy.encoder.core import ImageEncoder
+from cflearn_deploy.models.encoder import ImageEncoder
 
 
 current_folder = os.path.dirname(__file__)
