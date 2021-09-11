@@ -24,6 +24,15 @@ class TestAPIs(unittest.TestCase):
         stylized = bytes_to_np(response.content, mode="RGB")
         self.assertSequenceEqual(stylized.shape, [224, 224, 3])
 
+    def test_clf(self) -> None:
+        img = np.random.random([224, 224, 3])
+        onnx_path = os.path.join(current_folder, "models", "clf_test.onnx")
+        kwargs = _get_img_post_kwargs(img, onnx_path=onnx_path)
+        response = client.post("/cv/clf", **kwargs)
+        self.assertEqual(response.status_code, 200)
+        probabilities = json.loads(response.content)["probabilities"]
+        self.assertEqual(len(probabilities), 100)
+
     def test_sod(self) -> None:
         img = np.random.random([320, 320, 3])
         onnx_path = os.path.join(current_folder, "models", "sod_test.onnx")
