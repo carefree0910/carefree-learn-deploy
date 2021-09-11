@@ -6,6 +6,7 @@ import numpy as np
 
 from apis.interface import app
 from fastapi.testclient import TestClient
+from cflearn_deploy.toolkit import bytes_to_np
 from cflearn_deploy.api_utils import _get_img_post_kwargs
 
 
@@ -19,7 +20,9 @@ class TestAPIs(unittest.TestCase):
         model_path = os.path.join(current_folder, "models", "sod_test.onnx")
         kwargs = _get_img_post_kwargs(img, model_path=model_path)
         response = client.post("/cv/sod", **kwargs)
-        assert response.status_code == 200
+        self.assertEqual(response.status_code, 200)
+        rgba = bytes_to_np(response.content, mode="RGBA")
+        self.assertSequenceEqual(rgba.shape, [320, 320, 4])
 
     def test_cbir(self) -> None:
         img = np.random.random([224, 224, 3])
@@ -31,7 +34,7 @@ class TestAPIs(unittest.TestCase):
             skip_faiss=True,
         )
         response = client.post("/cv/cbir", **kwargs)
-        assert response.status_code == 200
+        self.assertEqual(response.status_code, 200)
         rs = json.loads(response.content)
         self.assertSequenceEqual(rs["files"], [""])
         self.assertSequenceEqual(rs["distances"], [0])
