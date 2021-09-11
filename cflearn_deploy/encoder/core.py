@@ -5,15 +5,17 @@ import numpy as np
 from typing import List
 
 from ..toolkit import bytes_to_np
-from ..onnx_api import ONNX
+from ..protocol import ModelProtocol
 from ..data.transforms import ToCHW
 from ..data.transforms import Compose
 from ..data.transforms import ImagenetNormalize
 
 
-class TextEncoder:
+@ModelProtocol.register("tbir")
+@ModelProtocol.register("text_encoder")
+class TextEncoder(ModelProtocol):
     def __init__(self, onnx_path: str, tokenizer_path: str):
-        self.onnx = ONNX(onnx_path)
+        super().__init__(onnx_path)
         with open(tokenizer_path, "rb") as f:
             self.tokenizer = dill.load(f)
 
@@ -25,9 +27,11 @@ class TextEncoder:
         return self._get_code(text)
 
 
-class ImageEncoder:
+@ModelProtocol.register("cbir")
+@ModelProtocol.register("image_encoder")
+class ImageEncoder(ModelProtocol):
     def __init__(self, onnx_path: str):
-        self.onnx = ONNX(onnx_path)
+        super().__init__(onnx_path)
         self.transform = Compose([ImagenetNormalize(), ToCHW()])
 
     def _get_code(self, src: np.ndarray) -> np.ndarray:

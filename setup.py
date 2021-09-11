@@ -14,7 +14,6 @@ setup(
         "regex",
         "dill",
         "tqdm",
-        "pymilvus-orm==2.0.0rc4",
         "sqlmodel",
         "PyYaml",
         "fastapi",

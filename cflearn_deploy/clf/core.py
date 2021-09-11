@@ -2,15 +2,16 @@ import numpy as np
 
 from ..toolkit import softmax
 from ..toolkit import bytes_to_np
-from ..onnx_api import ONNX
+from ..protocol import ModelProtocol
 from ..data.transforms import ToCHW
 from ..data.transforms import Compose
 from ..data.transforms import ImagenetNormalize
 
 
-class Clf:
+@ModelProtocol.register("clf")
+class Clf(ModelProtocol):
     def __init__(self, onnx_path: str):
-        self.onnx = ONNX(onnx_path)
+        super().__init__(onnx_path)
         self.transform = Compose([ImagenetNormalize(), ToCHW()])
 
     def _get_prob(self, src: np.ndarray) -> np.ndarray:

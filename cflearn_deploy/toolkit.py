@@ -3,9 +3,18 @@ import io
 import numpy as np
 
 from PIL import Image
+from typing import Any
+from typing import Dict
+from typing import Type
 from typing import Tuple
+from typing import Generic
+from typing import TypeVar
+from typing import Callable
+from typing import Optional
 from skimage.filters import gaussian
 from skimage.filters import unsharp_mask
+
+from .constants import WARNING_PREFIX
 
 
 def is_gray(arr: np.ndarray) -> bool:
@@ -106,3 +115,55 @@ def np_to_bytes(img_arr: np.ndarray) -> bytes:
     bytes_io = io.BytesIO()
     Image.fromarray(img_arr).save(bytes_io, format="PNG")
     return bytes_io.getvalue()
+
+
+def register_core(
+    name: str,
+    global_dict: Dict[str, type],
+    *,
+    before_register: Optional[Callable] = None,
+    after_register: Optional[Callable] = None,
+):
+    def _register(cls):
+        if before_register is not None:
+            before_register(cls)
+        registered = global_dict.get(name)
+        if registered is not None:
+            print(
+                f"{WARNING_PREFIX}'{name}' has already registered "
+                f"in the given global dict ({global_dict})"
+            )
+            return cls
+        global_dict[name] = cls
+        if after_register is not None:
+            after_register(cls)
+        return cls
+
+    return _register
+
+
+T = TypeVar("T")
+
+
+class WithRegister(Generic[T]):
+    d: Dict[str, Type[T]]
+    __identifier__: str
+
+    @classmethod
+    def get(cls, name: str) -> Type[T]:
+        return cls.d[name]
+
+    @classmethod
+    def make(cls, name: str, config: Dict[str, Any]) -> T:
+        return cls.get(name)(**config)  # type: ignore
+
+    @classmethod
+    def register(cls, name: str) -> Callable[[Type], Type]:
+        def before(cls_: Type) -> None:
+            cls_.__identifier__ = name
+
+        return register_core(name, cls.d, before_register=before)
+
+    @classmethod
+    def check_subclass(cls, name: str) -> bool:
+        return issubclass(cls.d[name], cls)

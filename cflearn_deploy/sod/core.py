@@ -3,15 +3,16 @@ import numpy as np
 from ..toolkit import cutout
 from ..toolkit import sigmoid
 from ..toolkit import bytes_to_np
-from ..onnx_api import ONNX
+from ..protocol import ModelProtocol
 from ..data.transforms import ToCHW
 from ..data.transforms import Compose
 from ..data.transforms import ImagenetNormalize
 
 
-class SOD:
+@ModelProtocol.register("sod")
+class SOD(ModelProtocol):
     def __init__(self, onnx_path: str):
-        self.onnx = ONNX(onnx_path)
+        super().__init__(onnx_path)
         self.transform = Compose([ImagenetNormalize(), ToCHW()])
 
     def _get_alpha(self, src: np.ndarray) -> np.ndarray:

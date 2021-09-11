@@ -2,13 +2,14 @@ import numpy as np
 
 from ..toolkit import to_uint8
 from ..toolkit import bytes_to_np
-from ..onnx_api import ONNX
+from ..protocol import ModelProtocol
 from ..data.transforms import ToCHW
 
 
-class AdaINStylizer:
+@ModelProtocol.register("adain")
+class AdaINStylizer(ModelProtocol):
     def __init__(self, onnx_path: str):
-        self.onnx = ONNX(onnx_path)
+        super().__init__(onnx_path)
         self.transform = ToCHW()
 
     def _get_stylized(self, content: np.ndarray, style: np.ndarray) -> np.ndarray:
