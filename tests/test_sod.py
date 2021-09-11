@@ -4,7 +4,7 @@ import unittest
 import numpy as np
 
 from cflearn_deploy.toolkit import np_to_bytes
-from cflearn_deploy.sod.core import SOD
+from cflearn_deploy.models.sod import SOD
 
 
 current_folder = os.path.dirname(__file__)
