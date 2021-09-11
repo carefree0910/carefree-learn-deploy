@@ -6,5 +6,6 @@ WORKDIR /carefree-learn-deploy
 COPY . .
 RUN python3 -m pip install --upgrade pip
 RUN python3 -m pip install .
+RUN python3 -m pip install faiss-cpu
 EXPOSE 80
 CMD ["uvicorn", "apis.interface:app", "--host", "0.0.0.0", "--port", "80"]
