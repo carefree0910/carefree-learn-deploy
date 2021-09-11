@@ -19,7 +19,7 @@ class AdaINStylizer(ModelProtocol):
         stylized = stylized.transpose([1, 2, 0])
         return to_uint8(stylized)
 
-    def run(self, img_bytes0: bytes, img_bytes1: bytes) -> np.ndarray:
+    def run(self, img_bytes0: bytes, img_bytes1: bytes) -> np.ndarray:  # type: ignore
         content = bytes_to_np(img_bytes0, mode="RGB")
         style = bytes_to_np(img_bytes1, mode="RGB")
         return self._get_stylized(content, style)

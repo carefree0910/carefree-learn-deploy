@@ -21,7 +21,7 @@ class SOD(ModelProtocol):
         logits = np.clip(logits, -50.0, 50.0)
         return sigmoid(logits)
 
-    def run(
+    def run(  # type: ignore
         self,
         img_bytes: bytes,
         *,

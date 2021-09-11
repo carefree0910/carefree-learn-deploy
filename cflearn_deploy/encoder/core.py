@@ -23,7 +23,7 @@ class TextEncoder(ModelProtocol):
         tokens = self.tokenizer(text)
         return self.onnx.run(tokens)[0][0]
 
-    def run(self, text: List[str]) -> np.ndarray:
+    def run(self, text: List[str]) -> np.ndarray:  # type: ignore
         return self._get_code(text)
 
 
@@ -38,7 +38,7 @@ class ImageEncoder(ModelProtocol):
         transformed = self.transform(src)[None, ...]
         return self.onnx.run(transformed)[0][0]
 
-    def run(self, img_bytes: bytes) -> np.ndarray:
+    def run(self, img_bytes: bytes) -> np.ndarray:  # type: ignore
         src = bytes_to_np(img_bytes, mode="RGB")
         return self._get_code(src)
 

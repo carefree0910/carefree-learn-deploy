@@ -123,8 +123,8 @@ def register_core(
     *,
     before_register: Optional[Callable] = None,
     after_register: Optional[Callable] = None,
-):
-    def _register(cls):
+) -> Callable[[Type], Type]:
+    def _register(cls: Type) -> Type:
         if before_register is not None:
             before_register(cls)
         registered = global_dict.get(name)

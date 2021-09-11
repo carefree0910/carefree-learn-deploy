@@ -19,7 +19,7 @@ class Clf(ModelProtocol):
         logits = self.onnx.run(transformed)[0]
         return softmax(logits)[0]
 
-    def run(self, img_bytes: bytes) -> np.ndarray:
+    def run(self, img_bytes: bytes) -> np.ndarray:  # type: ignore
         src = bytes_to_np(img_bytes, mode="RGB")
         return self._get_prob(src)
 
