@@ -90,7 +90,7 @@ class ONNXModel(BaseModel):
             else:
                 # get rid of "path" appendix
                 key_name = "_".join(k.split("_")[:-1])
-                api_kwargs[k] = f"{name}_{key_name}.pkl"
+                api_kwargs[k] = os.path.join(model_root, f"{name}_{key_name}.pkl")
         return api_kwargs
 
 
