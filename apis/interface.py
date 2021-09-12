@@ -176,7 +176,7 @@ class IRResponse(BaseModel):
         index.nprobe = data.nprobe
         distances, indices = index.search(code[None, ...], data.top_k)
         logging.debug(f"/cv/{key} -> faiss elapsed time : {time.time() - t:8.6f}")
-        with open(os.path.join(meta_root, data.task, "files.json"), "r") as rf:
+        with open(os.path.join(meta_root, data.task, f"{key}_files.json"), "r") as rf:
             files = json.load(rf)
         return IRResponse(
             files=[files[i] for i in indices[0].tolist()],
