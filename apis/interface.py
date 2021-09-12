@@ -171,11 +171,16 @@ class IRResponse(BaseModel):
 
     @classmethod
     def create_from(cls, key: str, code: np.ndarray, data: IRModel) -> "IRResponse":
-        t = time.time()
+        t1 = time.time()
         index = get_faiss_index(data.task, key)
+        t2 = time.time()
         index.nprobe = data.nprobe
         distances, indices = index.search(code[None, ...], data.top_k)
-        logging.debug(f"/cv/{key} -> faiss elapsed time : {time.time() - t:8.6f}")
+        t3 = time.time()
+        logging.debug(
+            f"/cv/{key} -> faiss elapsed time : {t3 - t1:8.6f} | "
+            f"load : {t2 - t1:8.6f} | core : {t3 - t2:8.6f}"
+        )
         with open(os.path.join(meta_root, data.task, f"{key}_files.json"), "r") as rf:
             files = json.load(rf)
         return IRResponse(
