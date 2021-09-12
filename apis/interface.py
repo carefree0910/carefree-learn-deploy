@@ -48,7 +48,12 @@ meta_root = os.path.join(root, "src", "meta")
 
 
 def get_faiss_index(task: str, key: str) -> faiss.Index:
-    return faiss.read_index(os.path.join(meta_root, task, f"{key}.index"))
+    zoo_key = f"{task}_{key}"
+    index = faiss_zoo.get(zoo_key)
+    if index is None:
+        index = faiss.read_index(os.path.join(meta_root, task, f"{key}.index"))
+        faiss_zoo[zoo_key] = index
+    return index
 
 
 # unified api
