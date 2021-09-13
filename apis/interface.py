@@ -47,11 +47,12 @@ faiss_zoo: Dict[str, faiss.Index] = {}
 meta_root = os.path.join(root, "src", "meta")
 
 
-def get_faiss_index(task: str, key: str) -> faiss.Index:
-    zoo_key = f"{task}_{key}"
+def get_faiss_index(task: str, key: str, data: "ONNXModel") -> faiss.Index:
+    name = data.name(key)
+    zoo_key = f"{task}_{name}"
     index = faiss_zoo.get(zoo_key)
     if index is None:
-        index = faiss.read_index(os.path.join(meta_root, task, f"{key}.index"))
+        index = faiss.read_index(os.path.join(meta_root, task, f"{name}.index"))
         faiss_zoo[zoo_key] = index
     return index
 
@@ -79,8 +80,11 @@ class ONNXModel(BaseModel):
     def run_kwargs(self) -> Dict[str, Any]:
         return {k: getattr(self, k) for k in self.run_keys}
 
+    def name(self, key: str) -> str:
+        return self.onnx_name or key
+
     def api_kwargs(self, key: str) -> Dict[str, Any]:
-        name = self.onnx_name or key
+        name = self.name(key)
         onnx_path = self.onnx_path or os.path.join(model_root, f"{name}.onnx")
         api_kwargs = {"onnx_path": onnx_path}
         model_kwargs = self.model_kwargs
@@ -177,7 +181,7 @@ class IRResponse(BaseModel):
     @classmethod
     def create_from(cls, key: str, code: np.ndarray, data: IRModel) -> "IRResponse":
         t1 = time.time()
-        index = get_faiss_index(data.task, key)
+        index = get_faiss_index(data.task, key, data)
         t2 = time.time()
         index.nprobe = data.nprobe
         distances, indices = index.search(code[None, ...], data.top_k)
