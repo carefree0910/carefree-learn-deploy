@@ -22,6 +22,7 @@ from fastapi import HTTPException
 from pydantic import BaseModel
 
 from cflearn_deploy.toolkit import np_to_bytes
+from cflearn_deploy.protocol import ModelProtocol
 from cflearn_deploy.protocol import ONNXModelProtocol
 
 
@@ -275,6 +276,25 @@ def clf(img_bytes0: bytes = File(...), data: ONNXModel = Depends()) -> ClfRespon
         logging.exception(err)
         e = sys.exc_info()[1]
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# unified general cv api
+
+
+def _cv_api(key: str, *args: Any, data: BaseModel) -> Any:
+    logging.debug(f"/cv/{key} endpoint entered")
+    t1 = time.time()
+    model_kwargs = json.loads(data.json())
+    logging.debug(f"-> kwargs    : {model_kwargs}")
+    model = ModelProtocol.make(key, model_kwargs)
+    t2 = time.time()
+    result = model.run(*args)
+    t3 = time.time()
+    logging.debug(
+        f"/cv/{key} elapsed time : {t3 - t1:8.6f}s | "
+        f"build : {t2 - t1:8.6f} | run : {t3 - t2:8.6f}"
+    )
+    return result
 
 
 if __name__ == "__main__":
