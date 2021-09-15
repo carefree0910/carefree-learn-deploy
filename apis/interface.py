@@ -297,6 +297,31 @@ def _cv_api(key: str, *args: Any, data: BaseModel) -> Any:
     return result
 
 
+# color extraction
+
+
+class ColorExtractionModel(BaseModel):
+    num_colors: int
+
+
+class ColorExtractionResponse(BaseModel):
+    colors: List[List[int]]
+
+
+@app.post("/cv/color_extraction", response_model=ColorExtractionResponse)
+def color_extraction(
+    img_bytes0: bytes = File(...),
+    data: ColorExtractionModel = Depends(),
+) -> ColorExtractionResponse:
+    try:
+        colors = _cv_api("color_extraction", img_bytes0, data=data)
+        return ColorExtractionResponse(colors=colors.tolist())
+    except Exception as err:
+        logging.exception(err)
+        e = sys.exc_info()[1]
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 if __name__ == "__main__":
     import uvicorn
 
