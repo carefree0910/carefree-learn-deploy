@@ -57,7 +57,7 @@ def get_faiss_index(task: str, key: str, data: "ONNXModel") -> faiss.Index:
     return index
 
 
-# unified api
+# unified onnx api
 
 
 class ONNXModel(BaseModel):
@@ -114,7 +114,7 @@ class ImageResponse(BaseModel):
     content: bytes
 
 
-def _api(key: str, *args: Any, data: ONNXModel) -> Any:
+def _onnx_api(key: str, *args: Any, data: ONNXModel) -> Any:
     logging.debug(f"/cv/{key} endpoint entered")
     t1 = time.time()
     api_bundle = model_zoo.get(key)
@@ -152,7 +152,7 @@ class SODModel(ONNXModel):
 @app.post("/cv/sod", response_model=ImageResponse)
 def sod(img_bytes0: bytes = File(...), data: SODModel = Depends()) -> Response:
     try:
-        rgba = _api("sod", img_bytes0, data=data)
+        rgba = _onnx_api("sod", img_bytes0, data=data)
         return Response(content=np_to_bytes(rgba), media_type="image/png")
     except Exception as err:
         logging.exception(err)
@@ -205,7 +205,7 @@ class IRResponse(BaseModel):
 def cbir(img_bytes0: bytes = File(...), data: IRModel = Depends()) -> IRResponse:
     try:
         key = "cbir"
-        latent_code = _api(key, img_bytes0, data=data)
+        latent_code = _onnx_api(key, img_bytes0, data=data)
         if data.skip_faiss:
             return IRResponse.dummy()
         return IRResponse.create_from(key, latent_code, data)
@@ -230,7 +230,7 @@ class TBIRModel(IRModel):
 def tbir(text: List[str], data: TBIRModel = Depends()) -> IRResponse:
     try:
         key = "tbir"
-        latent_code = _api(key, text, data=data)
+        latent_code = _onnx_api(key, text, data=data)
         if data.skip_faiss:
             return IRResponse.dummy()
         return IRResponse.create_from(key, latent_code, data)
@@ -250,7 +250,7 @@ def adain(
     data: ONNXModel = Depends(),
 ) -> Response:
     try:
-        stylized = _api("adain", img_bytes0, img_bytes1, data=data)
+        stylized = _onnx_api("adain", img_bytes0, img_bytes1, data=data)
         return Response(content=np_to_bytes(stylized), media_type="image/png")
     except Exception as err:
         logging.exception(err)
@@ -268,7 +268,7 @@ class ClfResponse(BaseModel):
 @app.post("/cv/clf", response_model=ClfResponse)
 def clf(img_bytes0: bytes = File(...), data: ONNXModel = Depends()) -> ClfResponse:
     try:
-        probabilities = _api("clf", img_bytes0, data=data)
+        probabilities = _onnx_api("clf", img_bytes0, data=data)
         return ClfResponse(probabilities=probabilities.tolist())
     except Exception as err:
         logging.exception(err)
