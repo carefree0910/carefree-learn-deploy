@@ -12,7 +12,7 @@ class ColorExtraction(ModelProtocol):
     def __init__(self, num_colors: int):
         self.k_means = KMeans(num_colors)
 
-    def run(self, img_bytes: bytes) -> np.ndarray:
+    def run(self, img_bytes: bytes) -> np.ndarray:  # type: ignore
         data = bytes_to_np(img_bytes, mode="RGB")
         data = data.reshape(-1, 3)
         self.k_means.fit(data)
