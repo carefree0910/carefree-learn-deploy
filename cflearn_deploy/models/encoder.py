@@ -20,7 +20,7 @@ class TextEncoder(ModelProtocol):
             self.tokenizer = dill.load(f)
 
     def _get_code(self, text: List[str]) -> np.ndarray:
-        tokens = self.tokenizer(text)
+        tokens = self.tokenizer.tokenize(text)
         return self.onnx.run(tokens)[0][0]
 
     def run(self, text: List[str]) -> np.ndarray:  # type: ignore
