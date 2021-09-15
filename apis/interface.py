@@ -6,7 +6,6 @@ import yaml
 import faiss
 import logging
 import datetime
-import cflearn_deploy
 import logging.config
 
 import numpy as np
@@ -21,7 +20,9 @@ from fastapi import FastAPI
 from fastapi import Response
 from fastapi import HTTPException
 from pydantic import BaseModel
+
 from cflearn_deploy.toolkit import np_to_bytes
+from cflearn_deploy.protocol import ONNXModelProtocol
 
 
 app = FastAPI()
@@ -121,7 +122,7 @@ def _onnx_api(key: str, *args: Any, data: ONNXModel) -> Any:
     api_kwargs = data.api_kwargs(key)
     onnx_path = api_kwargs["onnx_path"]
     if api_bundle is None or not api_bundle.check_identical(key, data):
-        api = cflearn_deploy.ModelProtocol.make(key, api_kwargs)
+        api = ONNXModelProtocol.make(key, api_kwargs)
         api_kwargs["api"] = api
         api_bundle = model_zoo[key] = LoadedModel(**api_kwargs)
     t2 = time.time()
@@ -132,7 +133,7 @@ def _onnx_api(key: str, *args: Any, data: ONNXModel) -> Any:
     t3 = time.time()
     logging.debug(
         f"/cv/{key} elapsed time : {t3 - t1:8.6f}s | "
-        f"load : {t2 - t1:8.6f} | core : {t3 - t2:8.6f}"
+        f"load : {t2 - t1:8.6f} | run : {t3 - t2:8.6f}"
     )
     return result
 

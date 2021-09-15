@@ -5,15 +5,15 @@ import numpy as np
 from typing import List
 
 from ..toolkit import bytes_to_np
-from ..protocol import ModelProtocol
+from ..protocol import ONNXModelProtocol
 from ..data.transforms import ToCHW
 from ..data.transforms import Compose
 from ..data.transforms import ImagenetNormalize
 
 
-@ModelProtocol.register("tbir")
-@ModelProtocol.register("text_encoder")
-class TextEncoder(ModelProtocol):
+@ONNXModelProtocol.register("tbir")
+@ONNXModelProtocol.register("text_encoder")
+class TextEncoder(ONNXModelProtocol):
     def __init__(self, onnx_path: str, tokenizer_path: str):
         super().__init__(onnx_path)
         with open(tokenizer_path, "rb") as f:
@@ -27,9 +27,9 @@ class TextEncoder(ModelProtocol):
         return self._get_code(text)
 
 
-@ModelProtocol.register("cbir")
-@ModelProtocol.register("image_encoder")
-class ImageEncoder(ModelProtocol):
+@ONNXModelProtocol.register("cbir")
+@ONNXModelProtocol.register("image_encoder")
+class ImageEncoder(ONNXModelProtocol):
     def __init__(self, onnx_path: str):
         super().__init__(onnx_path)
         self.transform = Compose([ImagenetNormalize(), ToCHW()])

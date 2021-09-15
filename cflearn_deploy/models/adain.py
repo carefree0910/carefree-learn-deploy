@@ -2,12 +2,12 @@ import numpy as np
 
 from ..toolkit import to_uint8
 from ..toolkit import bytes_to_np
-from ..protocol import ModelProtocol
+from ..protocol import ONNXModelProtocol
 from ..data.transforms import ToCHW
 
 
-@ModelProtocol.register("adain")
-class AdaINStylizer(ModelProtocol):
+@ONNXModelProtocol.register("adain")
+class AdaINStylizer(ONNXModelProtocol):
     def __init__(self, onnx_path: str):
         super().__init__(onnx_path)
         self.transform = ToCHW()

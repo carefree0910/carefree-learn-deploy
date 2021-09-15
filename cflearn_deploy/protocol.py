@@ -14,14 +14,17 @@ models: Dict[str, Type["ModelProtocol"]] = {}
 class ModelProtocol(WithRegister, metaclass=ABCMeta):
     d = models
 
-    def __init__(self, onnx_path: str, **kwargs: Any):
-        self.onnx = ONNX(onnx_path)
-
     @abstractmethod
     def run(self, *args: Any, **kwargs: Any) -> Any:
         pass
 
 
+class ONNXModelProtocol(ModelProtocol, metaclass=ABCMeta):
+    def __init__(self, onnx_path: str):
+        self.onnx = ONNX(onnx_path)
+
+
 __all__ = [
     "ModelProtocol",
+    "ONNXModelProtocol",
 ]

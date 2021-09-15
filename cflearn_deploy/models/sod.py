@@ -3,14 +3,14 @@ import numpy as np
 from ..toolkit import cutout
 from ..toolkit import sigmoid
 from ..toolkit import bytes_to_np
-from ..protocol import ModelProtocol
+from ..protocol import ONNXModelProtocol
 from ..data.transforms import ToCHW
 from ..data.transforms import Compose
 from ..data.transforms import ImagenetNormalize
 
 
-@ModelProtocol.register("sod")
-class SOD(ModelProtocol):
+@ONNXModelProtocol.register("sod")
+class SOD(ONNXModelProtocol):
     def __init__(self, onnx_path: str):
         super().__init__(onnx_path)
         self.transform = Compose([ImagenetNormalize(), ToCHW()])

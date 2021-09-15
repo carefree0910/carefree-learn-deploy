@@ -2,14 +2,14 @@ import numpy as np
 
 from ..toolkit import softmax
 from ..toolkit import bytes_to_np
-from ..protocol import ModelProtocol
+from ..protocol import ONNXModelProtocol
 from ..data.transforms import ToCHW
 from ..data.transforms import Compose
 from ..data.transforms import ImagenetNormalize
 
 
-@ModelProtocol.register("clf")
-class Clf(ModelProtocol):
+@ONNXModelProtocol.register("clf")
+class Clf(ONNXModelProtocol):
     def __init__(self, onnx_path: str):
         super().__init__(onnx_path)
         self.transform = Compose([ImagenetNormalize(), ToCHW()])
