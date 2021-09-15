@@ -25,6 +25,7 @@ setup(
         "requests_toolbelt",
         "pillow",
         "scikit-image",
+        "scikit-learn",
         "scipy>=1.2.1",
         "numpy>=1.19.2",
     ],
