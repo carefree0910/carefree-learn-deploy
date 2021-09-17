@@ -139,6 +139,20 @@ def _onnx_api(key: str, *args: Any, data: ONNXModel) -> Any:
     return result
 
 
+# style gan
+
+
+@app.post("/cv/style_gan", response_model=ImageResponse)
+def style_gan(data: ONNXModel = Depends()) -> Response:
+    try:
+        rgb = _onnx_api("style_gan", data=data)
+        return Response(content=np_to_bytes(rgb), media_type="image/png")
+    except Exception as err:
+        logging.exception(err)
+        e = sys.exc_info()[1]
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # sod
 
 
