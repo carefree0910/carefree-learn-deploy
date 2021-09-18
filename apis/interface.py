@@ -153,6 +153,20 @@ def style_gan(data: ONNXModel = Depends()) -> Response:
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# cycle gan
+
+
+@app.post("/cv/cycle_gan", response_model=ImageResponse)
+def cycle_gan(img_bytes0: bytes = File(...), data: ONNXModel = Depends()) -> Response:
+    try:
+        stylized = _onnx_api("cycle_gan", img_bytes0, data=data)
+        return Response(content=np_to_bytes(stylized), media_type="image/png")
+    except Exception as err:
+        logging.exception(err)
+        e = sys.exc_info()[1]
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # sod
 
 
