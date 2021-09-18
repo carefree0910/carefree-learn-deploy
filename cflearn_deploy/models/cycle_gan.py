@@ -12,6 +12,7 @@ class CycleGANStylizer(ONNXModelProtocol):
         content = 2.0 * content - 1.0
         stylized = self.onnx.run({"input": content})[0][0]
         stylized = stylized.transpose([1, 2, 0])
+        stylized = 0.5 * (stylized + 1.0)
         return to_uint8(stylized)
 
     def run(self, img_bytes0: bytes) -> np.ndarray:  # type: ignore
