@@ -117,6 +117,12 @@ def np_to_bytes(img_arr: np.ndarray) -> bytes:
     return bytes_io.getvalue()
 
 
+def resize_to(normalized_img: np.ndarray, shape: Any) -> Image.Image:
+    img = Image.fromarray(to_uint8(normalized_img))
+    img = img.resize(shape, Image.LANCZOS)
+    return img
+
+
 def register_core(
     name: str,
     global_dict: Dict[str, type],
