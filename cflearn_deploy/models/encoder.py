@@ -6,6 +6,7 @@ from typing import List
 
 from ..toolkit import bytes_to_np
 from ..protocol import ONNXModelProtocol
+from ..constants import LATENT_KEY
 from ..data.transforms import ToCHW
 from ..data.transforms import Compose
 from ..data.transforms import ImagenetNormalize
@@ -21,7 +22,7 @@ class TextEncoder(ONNXModelProtocol):
 
     def _get_code(self, text: List[str]) -> np.ndarray:
         tokens = self.tokenizer.tokenize(text)
-        return self.onnx.run(tokens)[0][0]
+        return next(iter(self.onnx.run(tokens).values()))[0]
 
     def run(self, text: List[str]) -> np.ndarray:  # type: ignore
         return self._get_code(text)
@@ -36,7 +37,7 @@ class ImageEncoder(ONNXModelProtocol):
 
     def _get_code(self, src: np.ndarray) -> np.ndarray:
         transformed = self.transform(src)[None, ...]
-        return self.onnx.run(transformed)[0][0]
+        return self.onnx.run(transformed)[LATENT_KEY][0]
 
     def run(self, img_bytes: bytes) -> np.ndarray:  # type: ignore
         src = bytes_to_np(img_bytes, mode="RGB")

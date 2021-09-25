@@ -4,6 +4,7 @@ from ..toolkit import cutout
 from ..toolkit import sigmoid
 from ..toolkit import bytes_to_np
 from ..protocol import ONNXModelProtocol
+from ..constants import PREDICTIONS_KEY
 from ..data.transforms import ToCHW
 from ..data.transforms import Compose
 from ..data.transforms import ImagenetNormalize
@@ -17,7 +18,7 @@ class SOD(ONNXModelProtocol):
 
     def _get_alpha(self, src: np.ndarray) -> np.ndarray:
         transformed = self.transform(src)[None, ...]
-        logits = self.onnx.run(transformed)[0][0][0]
+        logits = self.onnx.run(transformed)[PREDICTIONS_KEY][0][0]
         logits = np.clip(logits, -50.0, 50.0)
         return sigmoid(logits)
 

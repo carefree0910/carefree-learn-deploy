@@ -3,6 +3,7 @@ import numpy as np
 from ..toolkit import softmax
 from ..toolkit import bytes_to_np
 from ..protocol import ONNXModelProtocol
+from ..constants import PREDICTIONS_KEY
 from ..data.transforms import ToCHW
 from ..data.transforms import Compose
 from ..data.transforms import ImagenetNormalize
@@ -16,7 +17,7 @@ class Clf(ONNXModelProtocol):
 
     def _get_prob(self, src: np.ndarray) -> np.ndarray:
         transformed = self.transform(src)[None, ...]
-        logits = self.onnx.run(transformed)[0]
+        logits = self.onnx.run(transformed)[PREDICTIONS_KEY]
         return softmax(logits)[0]
 
     def run(self, img_bytes: bytes) -> np.ndarray:  # type: ignore
