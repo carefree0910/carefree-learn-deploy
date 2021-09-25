@@ -291,15 +291,24 @@ def adain(
 # clf
 
 
+class ClfModel(ONNXModel):
+    gray: bool = False
+    no_transform: bool = False
+
+    @property
+    def run_keys(self) -> List[str]:
+        return ["gray", "no_transform"]
+
+
 class ClfResponse(BaseModel):
-    probabilities: List[float]
+    probabilities: Dict[str, List[float]]
 
 
 @app.post("/cv/clf", response_model=ClfResponse)
-def clf(img_bytes0: bytes = File(...), data: ONNXModel = Depends()) -> ClfResponse:
+def clf(img_bytes0: bytes = File(...), data: ClfModel = Depends()) -> ClfResponse:
     try:
-        probabilities = _onnx_api("clf", img_bytes0, data=data)
-        return ClfResponse(probabilities=probabilities.tolist())
+        prob_dict = _onnx_api("clf", img_bytes0, data=data)
+        return ClfResponse(probabilities={k: v.tolist() for k, v in prob_dict.items()})
     except Exception as err:
         logging.exception(err)
         e = sys.exc_info()[1]
