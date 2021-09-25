@@ -8,6 +8,7 @@ from apis.interface import app
 from fastapi.testclient import TestClient
 from cflearn_deploy.toolkit import bytes_to_np
 from cflearn_deploy.api_utils import _get_img_post_kwargs
+from cflearn_deploy.constants import PREDICTIONS_KEY
 
 
 client = TestClient(app)
@@ -31,7 +32,7 @@ class TestAPIs(unittest.TestCase):
         response = client.post("/cv/clf", **kwargs)
         self.assertEqual(response.status_code, 200)
         probabilities = json.loads(response.content)["probabilities"]
-        self.assertEqual(len(probabilities), 100)
+        self.assertEqual(len(probabilities[PREDICTIONS_KEY]), 100)
 
     def test_sod(self) -> None:
         img = np.random.random([320, 320, 3])
