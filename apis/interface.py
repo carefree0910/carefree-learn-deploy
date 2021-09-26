@@ -8,8 +8,6 @@ import logging
 import datetime
 import logging.config
 
-import numpy as np
-
 from typing import Any
 from typing import Dict
 from typing import List
@@ -21,6 +19,7 @@ from fastapi import Response
 from fastapi import HTTPException
 from pydantic import BaseModel
 
+from cflearn_deploy.types import np_dict_type
 from cflearn_deploy.toolkit import np_to_bytes
 from cflearn_deploy.protocol import ModelProtocol
 from cflearn_deploy.protocol import ONNXModelProtocol
@@ -49,12 +48,11 @@ faiss_zoo: Dict[str, faiss.Index] = {}
 meta_root = os.path.join(root, "src", "meta")
 
 
-def get_faiss_index(task: str, key: str, data: "ONNXModel") -> faiss.Index:
-    name = data.name(key)
-    zoo_key = f"{task}_{name}"
+def get_faiss_index(task: str, faiss_name: str) -> faiss.Index:
+    zoo_key = f"{task}_{faiss_name}"
     index = faiss_zoo.get(zoo_key)
     if index is None:
-        index = faiss.read_index(os.path.join(meta_root, task, f"{name}.index"))
+        index = faiss.read_index(os.path.join(meta_root, task, f"{faiss_name}.index"))
         faiss_zoo[zoo_key] = index
     return index
 
@@ -198,34 +196,60 @@ class IRModel(ONNXModel):
     top_k: int = 10
     nprobe: int = 16
     skip_faiss: bool = False
+    gray: bool = False
+    no_transform: bool = False
+
+    @property
+    def run_keys(self) -> List[str]:
+        return ["gray", "no_transform"]
 
 
 class IRResponse(BaseModel):
-    files: List[str]
-    distances: List[float]
+    files: Dict[str, List[str]]
+    distances: Dict[str, List[float]]
 
     @classmethod
     def dummy(cls) -> "IRResponse":
-        return cls(files=[""], distances=[0.0])
+        return cls(files={"main": [""]}, distances={"main": [0.0]})
 
     @classmethod
-    def create_from(cls, key: str, code: np.ndarray, data: IRModel) -> "IRResponse":
-        t1 = time.time()
-        index = get_faiss_index(data.task, key, data)
-        t2 = time.time()
-        index.nprobe = data.nprobe
-        distances, indices = index.search(code[None, ...], data.top_k)
-        t3 = time.time()
-        logging.debug(
-            f"/cv/{key} -> faiss elapsed time : {t3 - t1:8.6f} | "
-            f"load : {t2 - t1:8.6f} | core : {t3 - t2:8.6f}"
-        )
-        with open(os.path.join(meta_root, data.task, f"{key}_files.json"), "r") as rf:
-            files = json.load(rf)
-        return IRResponse(
-            files=[files[i] for i in indices[0].tolist()],
-            distances=distances[0].tolist(),
-        )
+    def create_from(cls, key: str, codes: np_dict_type, data: IRModel) -> "IRResponse":
+        def _core(sub_key: Optional[str]) -> None:
+            t1 = time.time()
+            faiss_name = data.name(key)
+            if sub_key is None:
+                assert len(codes) == 1
+                code = next(iter(codes.values()))
+            else:
+                faiss_name = f"{faiss_name}.{sub_key}"
+                code = codes[sub_key]
+            index = get_faiss_index(data.task, faiss_name)
+            t2 = time.time()
+            index.nprobe = data.nprobe
+            sub_distances, indices = index.search(code, data.top_k)
+            t3 = time.time()
+            sub_str = "" if sub_key is None else f"({sub_key}) "
+            logging.debug(
+                f"/cv/{key} -> faiss elapsed time {sub_str}: "
+                f"{t3 - t1:8.6f} | load : {t2 - t1:8.6f} | core : {t3 - t2:8.6f}"
+            )
+            file_name = f"{faiss_name}_files.json"
+            file_path = os.path.join(meta_root, data.task, file_name)
+            with open(file_path, "r", encoding="utf-8") as rf:
+                sub_files = json.load(rf)
+            if sub_key is None:
+                sub_key = "main"
+            files[sub_key] = [sub_files[i] for i in indices[0].tolist()]
+            distances[sub_key] = sub_distances[0].tolist()
+
+        files: Dict[str, List[str]] = {}
+        distances: Dict[str, List[float]] = {}
+        if len(codes) == 1:
+            _core(None)
+        else:
+            for k in codes:
+                _core(k)
+        return IRResponse(files=files, distances=distances)
 
 
 # cbir
@@ -235,10 +259,10 @@ class IRResponse(BaseModel):
 def cbir(img_bytes0: bytes = File(...), data: IRModel = Depends()) -> IRResponse:
     try:
         key = "cbir"
-        latent_code = _onnx_api(key, img_bytes0, data=data)
+        latent_codes = _onnx_api(key, img_bytes0, data=data)
         if data.skip_faiss:
             return IRResponse.dummy()
-        return IRResponse.create_from(key, latent_code, data)
+        return IRResponse.create_from(key, latent_codes, data)
     except Exception as err:
         logging.exception(err)
         e = sys.exc_info()[1]
@@ -260,10 +284,10 @@ class TBIRModel(IRModel):
 def tbir(text: List[str], data: TBIRModel = Depends()) -> IRResponse:
     try:
         key = "tbir"
-        latent_code = _onnx_api(key, text, data=data)
+        latent_codes = _onnx_api(key, text, data=data)
         if data.skip_faiss:
             return IRResponse.dummy()
-        return IRResponse.create_from(key, latent_code, data)
+        return IRResponse.create_from(key, latent_codes, data)
     except Exception as err:
         logging.exception(err)
         e = sys.exc_info()[1]

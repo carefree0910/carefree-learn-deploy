@@ -55,8 +55,8 @@ class TestAPIs(unittest.TestCase):
         response = client.post("/cv/cbir", **kwargs)
         self.assertEqual(response.status_code, 200)
         rs = json.loads(response.content)
-        self.assertSequenceEqual(rs["files"], [""])
-        self.assertSequenceEqual(rs["distances"], [0])
+        self.assertSequenceEqual(rs["files"]["main"], [""])
+        self.assertSequenceEqual(rs["distances"]["main"], [0.0])
 
 
 if __name__ == "__main__":

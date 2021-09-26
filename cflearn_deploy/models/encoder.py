@@ -4,9 +4,9 @@ import numpy as np
 
 from typing import List
 
+from ..types import np_dict_type
 from ..toolkit import bytes_to_np
 from ..protocol import ONNXModelProtocol
-from ..constants import LATENT_KEY
 from ..data.transforms import ToCHW
 from ..data.transforms import Compose
 from ..data.transforms import ImagenetNormalize
@@ -20,11 +20,17 @@ class TextEncoder(ONNXModelProtocol):
         with open(tokenizer_path, "rb") as f:
             self.tokenizer = dill.load(f)
 
-    def _get_code(self, text: List[str]) -> np.ndarray:
+    def _get_code(self, text: List[str]) -> np_dict_type:
         tokens = self.tokenizer.tokenize(text)
-        return next(iter(self.onnx.run(tokens).values()))[0]
+        return self.onnx.run(tokens)
 
-    def run(self, text: List[str]) -> np.ndarray:  # type: ignore
+    def run(  # type: ignore
+        self,
+        text: List[str],
+        gray: bool = False,
+        no_transform: bool = False,
+    ) -> np.ndarray:
+        assert not gray and not no_transform
         return self._get_code(text)
 
 
@@ -35,13 +41,28 @@ class ImageEncoder(ONNXModelProtocol):
         super().__init__(onnx_path)
         self.transform = Compose([ImagenetNormalize(), ToCHW()])
 
-    def _get_code(self, src: np.ndarray) -> np.ndarray:
-        transformed = self.transform(src)[None, ...]
-        return self.onnx.run(transformed)[LATENT_KEY][0]
+    def _get_code(
+        self,
+        src: np.ndarray,
+        gray: bool,
+        no_transform: bool,
+    ) -> np_dict_type:
+        if gray:
+            src = src.mean(axis=2, keepdims=True)
+        if no_transform:
+            transformed = src.transpose([2, 0, 1])[None, ...]
+        else:
+            transformed = self.transform(src)[None, ...]
+        return self.onnx.run(transformed)
 
-    def run(self, img_bytes: bytes) -> np.ndarray:  # type: ignore
+    def run(  # type: ignore
+        self,
+        img_bytes: bytes,
+        gray: bool = False,
+        no_transform: bool = False,
+    ) -> np_dict_type:
         src = bytes_to_np(img_bytes, mode="RGB")
-        return self._get_code(src)
+        return self._get_code(src, gray, no_transform)
 
 
 __all__ = [
