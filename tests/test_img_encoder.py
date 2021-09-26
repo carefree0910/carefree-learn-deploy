@@ -15,9 +15,9 @@ class TestImageEncoder(unittest.TestCase):
         test_src = np.random.random([224, 224, 3]).astype(np.float32)
         test_src2 = np.random.random([320, 320, 3]).astype(np.float32)
         encoder = ImageEncoder(os.path.join(current_folder, "models", "cbir_test.onnx"))
-        encoder._get_code(test_src)
+        encoder._get_code(test_src, False, False)
         with self.assertRaises(Exception):
-            encoder._get_code(test_src2)
+            encoder._get_code(test_src2, False, False)
         encoder.run(np_to_bytes(test_src))
         with self.assertRaises(Exception):
             encoder.run(np_to_bytes(test_src2))
