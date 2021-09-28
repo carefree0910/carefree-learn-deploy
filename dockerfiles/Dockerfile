@@ -1,6 +1,7 @@
 FROM python:3.6-slim
 WORKDIR /carefree-learn-deploy
 COPY . .
+RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 RUN pip install .
 RUN pip install -r requirements.txt
 EXPOSE 80
