@@ -1,0 +1,63 @@
+stages:
+  - test
+  - build
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
+test:
+  stage: test
+  image: python:3.6-slim
+  before_script:
+    - pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+    - pip3 install pytest pytest-cov
+    - pip3 install -e .
+    - pip3 install -r requirements.txt
+    - python3 -m pip install types-requests
+    - python3 -m pip install types-PyYAML
+    - pip3 install black
+    - pip3 install mypy
+  script:
+    - black . --check --diff
+    - mypy .
+    - pytest -v --cov
+
+docker-build:
+  stage: build
+  services:
+  - alias: buildkitd
+    name: moby/buildkit:rootless
+    command:
+      - "--oci-worker-no-process-sandbox"
+      - "--addr"
+      - "tcp://0.0.0.0:1234"
+  variables:
+    BUILDKIT_HOST: tcp://buildkitd:1234
+
+  image:
+    name: moby/buildkit:rootless
+    entrypoint: [ "sh", "-c" ]
+  script:
+    - mkdir -p ~/.docker
+    - echo "{\"auths\":{\"https://${CI_REGISTRY}\":{\"username\":\"${CI_REGISTRY_USER}\",\"password\":\"${CI_REGISTRY_PASSWORD}\"}}}" > ~/.docker/config.json
+    - echo ${GITLAB_ID_RSA}
+    - |
+      buildctl build \
+        --frontend=dockerfile.v0 \
+        --local context=. \
+        --local dockerfile=dockerfiles \
+        --import-cache type=local,src=cache \
+        --export-cache type=local,dest=cache \
+        --output type=image,name=${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}_${CI_COMMIT_SHORT_SHA},push=true
+
+  cache:
+    key: ${CI_COMMIT_REF_SLUG}-buildkit-cache
+    paths:
+      - cache/
+
+  dependencies:
+    - test
