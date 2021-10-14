@@ -26,38 +26,32 @@ test:
     - mypy .
     - pytest -v --cov
 
-docker-build:
+buildkitd:
   stage: build
   services:
   - alias: buildkitd
     name: moby/buildkit:rootless
     command:
-      - "--oci-worker-no-process-sandbox"
-      - "--addr"
-      - "tcp://0.0.0.0:1234"
+    - "--oci-worker-no-process-sandbox"
+    - "--addr"
+    - "tcp://0.0.0.0:1234"
   variables:
     BUILDKIT_HOST: tcp://buildkitd:1234
-
   image:
     name: moby/buildkit:rootless
     entrypoint: [ "sh", "-c" ]
   script:
-    - mkdir -p ~/.docker
-    - echo "{\"auths\":{\"https://${CI_REGISTRY}\":{\"username\":\"${CI_REGISTRY_USER}\",\"password\":\"${CI_REGISTRY_PASSWORD}\"}}}" > ~/.docker/config.json
-    - echo ${GITLAB_ID_RSA}
-    - |
-      buildctl build \
+  - mkdir -p ~/.docker
+  - echo "{\"auths\":{\"https://${CI_REGISTRY}\":{\"username\":\"${CI_REGISTRY_USER}\",\"password\":\"${CI_REGISTRY_PASSWORD}\"}}}" > ~/.docker/config.json
+  - |
+    buildctl build \
         --frontend=dockerfile.v0 \
         --local context=. \
-        --local dockerfile=dockerfiles \
-        --import-cache type=local,src=cache \
-        --export-cache type=local,dest=cache \
+        --local dockerfile=. \
+        --opt build-arg:ID_RSA=${GITLAB_ID_RSA} \
+        --export-cache mode=max,type=registry,ref=${CI_REGISTRY_IMAGE}/buildcache:${CI_COMMIT_REF_SLUG},push=true \
+        --import-cache type=registry,ref=${CI_REGISTRY_IMAGE}/buildcache:${CI_COMMIT_REF_SLUG} \
         --output type=image,name=${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}_${CI_COMMIT_SHORT_SHA},push=true
-
-  cache:
-    key: ${CI_COMMIT_REF_SLUG}-buildkit-cache
-    paths:
-      - cache/
 
   dependencies:
     - test
