@@ -47,7 +47,7 @@ buildkitd:
     buildctl build \
         --frontend=dockerfile.v0 \
         --local context=. \
-        --local dockerfile=. \
+        --local dockerfile=dockerfiles \
         --opt build-arg:ID_RSA=${GITLAB_ID_RSA} \
         --export-cache mode=max,type=registry,ref=${CI_REGISTRY_IMAGE}/buildcache:${CI_COMMIT_REF_SLUG},push=true \
         --import-cache type=registry,ref=${CI_REGISTRY_IMAGE}/buildcache:${CI_COMMIT_REF_SLUG} \
