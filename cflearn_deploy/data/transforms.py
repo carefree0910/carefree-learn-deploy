@@ -14,9 +14,14 @@ class ImagenetNormalize:
         return img
 
 
-class ToCHW:
+class ToGray:
     def __call__(self, img: np.ndarray) -> np.ndarray:
-        return img.transpose([2, 0, 1])
+        return img.dot([[0.2989], [0.587], [0.114]])
+
+
+class ToNCHW:
+    def __call__(self, img: np.ndarray) -> np.ndarray:
+        return img.transpose([0, 3, 1, 2])
 
 
 class Compose:
@@ -35,3 +40,15 @@ class Compose:
             format_string += "    {0}".format(t)
         format_string += "\n)"
         return format_string
+
+
+class ImagenetPreprocess:
+    def __init__(self):  # type: ignore
+        self.to_gray = ToGray()
+        self.transform = Compose([ImagenetNormalize(), ToNCHW()])
+
+    def __call__(self, img: np.ndarray, is_gray: bool) -> np.ndarray:
+        if is_gray:
+            img = self.to_gray(img)
+        img = self.transform(img)
+        return img.astype(np.float32)

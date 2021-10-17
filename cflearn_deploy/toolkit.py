@@ -1,10 +1,14 @@
-import io
+import os
+import sys
+import json
+import faiss
 
 import numpy as np
 
 from PIL import Image
 from typing import Any
 from typing import Dict
+from typing import List
 from typing import Type
 from typing import Tuple
 from typing import Generic
@@ -63,7 +67,7 @@ def quantile_normalize(
 def imagenet_normalize(arr: np.ndarray) -> np.ndarray:
     mean_gray, std_gray = [0.485], [0.229]
     mean_rgb, std_rgb = [0.485, 0.456, 0.406], [0.229, 0.224, 0.225]
-    np_constructor = lambda inp: np.array(inp, dtype=np.float32).reshape([1, 1, -1])
+    np_constructor = lambda inp: np.array(inp, dtype=np.float32).reshape([1, 1, 1, -1])
     if is_gray(arr):
         mean, std = map(np_constructor, [mean_gray, std_gray])
     else:
@@ -104,19 +108,6 @@ def cutout(
     return alpha, rgba
 
 
-def bytes_to_np(img_bytes: bytes, *, mode: str) -> np.ndarray:
-    img = np.array(Image.open(io.BytesIO(img_bytes)).convert(mode))
-    return img.astype(np.float32) / 255.0
-
-
-def np_to_bytes(img_arr: np.ndarray) -> bytes:
-    if img_arr.dtype != np.uint8:
-        img_arr = to_uint8(img_arr)
-    bytes_io = io.BytesIO()
-    Image.fromarray(img_arr).save(bytes_io, format="PNG")
-    return bytes_io.getvalue()
-
-
 def resize_to(normalized_img: np.ndarray, shape: Any) -> Image.Image:
     img = Image.fromarray(to_uint8(normalized_img))
     img = img.resize(shape, Image.LANCZOS)
@@ -148,6 +139,16 @@ def register_core(
     return _register
 
 
+def get_compatible_name(name: str, version: Tuple[int, int]) -> str:
+    version_info = sys.version_info
+    need_compatible = False
+    if version_info.major > version[0] or version_info.minor >= version[1]:
+        need_compatible = True
+    if need_compatible:
+        name = f"{name}_{version[0]}.{version[1]}"
+    return name
+
+
 T = TypeVar("T")
 
 
@@ -173,3 +174,44 @@ class WithRegister(Generic[T]):
     @classmethod
     def check_subclass(cls, name: str) -> bool:
         return issubclass(cls.d[name], cls)
+
+
+class IRMixin:
+    faiss_info: Dict[str, Any]
+    appendix_list: List[str]
+
+    def init_faiss(self, model: str, current_folder: str) -> None:
+        self.faiss_info = {}
+        for appendix in self.appendix_list:
+            json_path = os.path.join(current_folder, f"{model}{appendix}_files.json")
+            faiss_path = os.path.join(current_folder, f"{model}{appendix}.index")
+            with open(json_path, "r") as f:
+                files = json.load(f)
+            self.faiss_info[appendix] = {
+                "index": faiss.read_index(faiss_path),
+                "files": files,
+            }
+
+    def get_outputs(
+        self,
+        appendix: str,
+        response: Any,
+        n_probe: int,
+        top_k: int,
+    ) -> List[Any]:
+        import triton_python_backend_utils as pb_utils
+
+        tensor = pb_utils.get_output_tensor_by_name(response, "predictions")
+        codes = tensor.as_numpy()
+        all_files, all_distances = [], []
+        for code in codes:
+            info = self.faiss_info[appendix]
+            index, files = info["index"], info["files"]
+            index.nprobe = n_probe
+            distances, indices = index.search(code[None, ...], top_k)
+            all_files.append(np.array([files[i] for i in indices[0]], np.object))
+            all_distances.append(distances[0])
+        return [
+            pb_utils.Tensor("files", np.stack(all_files, axis=0)),
+            pb_utils.Tensor("distances", np.stack(all_distances, axis=0)),
+        ]

@@ -1,5 +1,9 @@
 apis/src
 apis/logs
-apis/models
+apis/models/*_core
+apis/models/*/*/*.txt
+apis/models/*/*/*.json
+apis/models/*/*/*.index
+apis/models_bk
 .*
 carefree_learn_deploy.egg-info

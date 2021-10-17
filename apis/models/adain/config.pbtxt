@@ -1,0 +1,24 @@
+backend: "python"
+max_batch_size: 4
+instance_group [{ kind: KIND_CPU }]
+
+input [
+{
+    name: "input"
+    data_type: TYPE_UINT8
+    dims: [ 512, 512, 3 ]
+},
+{
+    name: "style"
+    data_type: TYPE_UINT8
+    dims: [ 512, 512, 3 ]
+}
+]
+
+output [
+{
+    name: "predictions"
+    data_type: TYPE_UINT8
+    dims: [ 512, 512, 3 ]
+}
+]

@@ -1,0 +1,39 @@
+backend: "python"
+max_batch_size: 4
+instance_group [{ kind: KIND_CPU }]
+
+input [
+{
+    name: "input"
+    data_type: TYPE_FP32
+    dims: [ 224, 224, 3 ]
+},
+{
+    name: "top_k"
+    data_type: TYPE_INT64
+    dims: [ 1 ]
+},
+{
+    name: "num_probe"
+    data_type: TYPE_INT64
+    dims: [ 1 ]
+},
+{
+    name: "gray"
+    data_type: TYPE_BOOL
+    dims: [ 1 ]
+}
+]
+
+output [
+{
+    name: "files"
+    data_type: TYPE_STRING
+    dims: [ -1 ]
+},
+{
+    name: "distances"
+    data_type: TYPE_FP32
+    dims: [ -1 ]
+}
+]
