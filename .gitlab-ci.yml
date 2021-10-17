@@ -14,7 +14,6 @@ test:
   image: python:3.6-slim
   before_script:
     - pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
-    - pip3 install pytest pytest-cov
     - pip3 install -e .
     - python3 -m pip install types-requests
     - python3 -m pip install types-PyYAML
@@ -23,7 +22,6 @@ test:
   script:
     - black . --check --diff
     - mypy .
-    - pytest -v --cov
 
 buildkitd:
   stage: build
