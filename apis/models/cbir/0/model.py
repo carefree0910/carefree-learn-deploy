@@ -10,7 +10,7 @@ from cflearn_deploy.data.transforms import ImagenetPreprocess
 
 
 class TritonPythonModel(IRMixin):
-    appendix_list = ["", "gray"]
+    appendix_list = ["", "_gray"]
 
     def initialize(self, _: Dict[str, Any]) -> None:
         self.preprocess = ImagenetPreprocess()
