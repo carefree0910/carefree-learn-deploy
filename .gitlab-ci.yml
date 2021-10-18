@@ -2,13 +2,6 @@ stages:
   - test
   - build
 
-variables:
-  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-
-cache:
-  paths:
-    - .cache/pip
-
 test:
   stage: test
   image: python:3.6-slim
