@@ -185,7 +185,7 @@ class IRMixin:
         for appendix in self.appendix_list:
             json_path = os.path.join(current_folder, f"{model}{appendix}_files.json")
             faiss_path = os.path.join(current_folder, f"{model}{appendix}.index")
-            with open(json_path, "r") as f:
+            with open(json_path, "r", encoding="utf-8") as f:
                 files = json.load(f)
             self.faiss_info[appendix] = {
                 "index": faiss.read_index(faiss_path),
