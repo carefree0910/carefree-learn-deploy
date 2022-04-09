@@ -198,7 +198,7 @@ class IRMixin:
         response: Any,
         n_probe: int,
         top_k: int,
-    ) -> Tuple[List[str], List[float]]:
+    ) -> Tuple[List[List[str]], List[List[float]]]:
         import triton_python_backend_utils as pb_utils
 
         tensor = pb_utils.get_output_tensor_by_name(response, "predictions")
@@ -222,8 +222,8 @@ class IRMixin:
     ) -> List[Any]:
         import triton_python_backend_utils as pb_utils
 
-        all_files, all_distances = self.get_raw_outputs(appendix, response, n_probe, top_k)
+        files, distances = self.get_raw_outputs(appendix, response, n_probe, top_k)
         return [
-            pb_utils.Tensor("files", np.array(all_files, np.object)),
-            pb_utils.Tensor("distances", np.array(all_distances, np.float32)),
+            pb_utils.Tensor("files", np.array(files, np.object)),
+            pb_utils.Tensor("distances", np.array(distances, np.float32)),
         ]
