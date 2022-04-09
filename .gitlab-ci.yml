@@ -1,6 +1,5 @@
 stages:
   - test
-  - build
 
 test:
   stage: test
@@ -14,17 +13,3 @@ test:
   script:
     - black . --check --diff
     - mypy .
-
-buildkitd:
-  stage: build
-  tags:
-  - docker
-  script:
-  - mkdir -p ~/.docker
-  - echo "{\"auths\":{\"https://${CI_REGISTRY}\":{\"username\":\"${CI_REGISTRY_USER}\",\"password\":\"${CI_REGISTRY_PASSWORD}\"}}}" > ~/.docker/config.json
-  - docker build ./ -t ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}_${CI_COMMIT_SHORT_SHA}
-  - docker push ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}_${CI_COMMIT_SHORT_SHA}
-  - docker rmi ${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}_${CI_COMMIT_SHORT_SHA}
-
-  dependencies:
-    - test
