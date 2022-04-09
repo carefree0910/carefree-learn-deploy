@@ -446,3 +446,19 @@ class Client:
             query_params=query_params,
             outputs=outputs,
         )
+
+    def parse(self, result: InferResult) -> Dict[str, List[List[Any]]]:
+        outputs = result._result.get("outputs")
+        if outputs is None:
+            return {}
+        names = [output["name"] for output in outputs]
+        raw: List[np.ndarray] = [result.as_numpy(k) for k in names]
+        lists = [arr.tolist() for arr in raw]
+        converted = [
+            [
+                [elem.decode() if isinstance(elem, bytes) else elem for elem in arr]
+                for arr in arr_list
+            ]
+            for arr_list in lists
+        ]
+        return dict(zip(names, converted))
