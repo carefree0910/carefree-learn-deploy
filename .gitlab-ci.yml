@@ -39,3 +39,15 @@ deploy_developenv:
     refs:
       - master
       - main
+deploy_productionenv:
+  image:
+    harbor.nolibox.com/base-image/buildyaml:latest
+  stage: deploytest
+  script:
+    - mkdir -p ~/.kube/
+    - echo $gpu_kube_config | base64 -d > ~/.kube/config
+    - kubectl set image deployment ${CI_PROJECT_NAME} ${CI_PROJECT_NAME}=${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA} -n production --record
+  only:
+    refs:
+      - master
+      - main
