@@ -1,6 +1,7 @@
 stages:
   - test
   - build
+  - deploytest
 test:
   stage: test
   image: python:3.6-slim
