@@ -26,8 +26,6 @@ buildkitd:
   - docker rmi ${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA}
   dependencies:
     - test
-  rules:
-    - when: manual
 deploy_developenv:
   image:
     harbor.nolibox.com/base-image/buildyaml:latest
