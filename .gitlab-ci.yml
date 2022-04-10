@@ -26,3 +26,15 @@ buildkitd:
 
   dependencies:
     - test
+deploy_developenv:
+  image:
+    harbor.nolibox.com/base-image/buildyaml:latest
+  stage: deploytest
+  script:
+    - mkdir -p ~/.kube/
+    - echo $gpu_kube_config | base64 -d > ~/.kube/config
+    - kubectl set image deployment ${CI_PROJECT_NAME} ${CI_PROJECT_NAME}=${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA} -n test --record
+  except:
+    refs:
+      - master
+      - main
