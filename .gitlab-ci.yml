@@ -1,7 +1,7 @@
 stages:
   - test
   - build
-  - deploytest
+  - deploy
 test:
   stage: test
   image: python:3.6-slim
@@ -30,7 +30,7 @@ buildkitd:
 deploy_developenv:
   image:
     harbor.nolibox.com/base-image/buildyaml:latest
-  stage: deploytest
+  stage: deploy
   script:
     - mkdir -p ~/.kube/
     - echo $gpu_kube_config | base64 -d > ~/.kube/config
@@ -42,7 +42,7 @@ deploy_developenv:
 deploy_productionenv:
   image:
     harbor.nolibox.com/base-image/buildyaml:latest
-  stage: deploytest
+  stage: deploy
   script:
     - mkdir -p ~/.kube/
     - echo $gpu_kube_config | base64 -d > ~/.kube/config
