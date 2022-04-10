@@ -27,8 +27,6 @@ buildkitd:
   dependencies:
     - test
   rules:
-    - exists:
-      - 'Dockerfile'
     - when: manual
 deploy_developenv:
   image:
@@ -39,8 +37,6 @@ deploy_developenv:
     - echo $gpu_kube_config | base64 -d > ~/.kube/config
     - kubectl set image deployment ${CI_PROJECT_NAME} ${CI_PROJECT_NAME}=${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA} -n test --record
   rules:
-    - exists:
-      - 'Dockerfile'
     - when: manual
 deploy_productionenv:
   image:
@@ -51,6 +47,4 @@ deploy_productionenv:
     - echo $gpu_kube_config | base64 -d > ~/.kube/config
     - kubectl set image deployment ${CI_PROJECT_NAME} ${CI_PROJECT_NAME}=${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA} -n production --record
   rules:
-    - exists:
-      - 'Dockerfile'
     - when: manual
