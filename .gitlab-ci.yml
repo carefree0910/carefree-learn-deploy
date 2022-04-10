@@ -24,9 +24,12 @@ buildkitd:
   - docker build ./ -t ${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA}
   - docker push ${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA}
   - docker rmi ${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA}
-
   dependencies:
     - test
+  rules:
+    - exists:
+      - 'Dockerfile'
+    - when: manual
 deploy_developenv:
   image:
     harbor.nolibox.com/base-image/buildyaml:latest
@@ -35,10 +38,10 @@ deploy_developenv:
     - mkdir -p ~/.kube/
     - echo $gpu_kube_config | base64 -d > ~/.kube/config
     - kubectl set image deployment ${CI_PROJECT_NAME} ${CI_PROJECT_NAME}=${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA} -n test --record
-  except:
-    refs:
-      - master
-      - main
+  rules:
+    - exists:
+      - 'Dockerfile'
+    - when: manual
 deploy_productionenv:
   image:
     harbor.nolibox.com/base-image/buildyaml:latest
@@ -47,7 +50,7 @@ deploy_productionenv:
     - mkdir -p ~/.kube/
     - echo $gpu_kube_config | base64 -d > ~/.kube/config
     - kubectl set image deployment ${CI_PROJECT_NAME} ${CI_PROJECT_NAME}=${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA} -n production --record
-  only:
-    refs:
-      - master
-      - main
+  rules:
+    - exists:
+      - 'Dockerfile'
+    - when: manual
