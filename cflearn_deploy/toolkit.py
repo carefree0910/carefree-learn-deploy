@@ -213,8 +213,11 @@ class IRMixin:
         all_files, all_distances = [], []
         for code in codes:
             distances, indices = index.search(code[None, ...], top_k)
-            all_files.append([files[i] for i in indices[0]])
-            all_distances.append(distances[0])
+            indices = indices[0]
+            distances = [d for i, d in enumerate(distances[0]) if indices[i] != -1]
+            indices = [i for i in indices if i != -1]
+            all_files.append([files[i] for i in indices])
+            all_distances.append(distances)
         return all_files, all_distances
 
     def get_outputs(
