@@ -10,7 +10,7 @@ setup(
     version=VERSION,
     packages=find_packages(exclude=("tests",)),
     install_requires=[
-        "faiss-cpu",
+        "faiss-gpu",
         "gevent",
         "geventhttpclient",
         "ftfy",
