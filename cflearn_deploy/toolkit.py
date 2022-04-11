@@ -187,9 +187,11 @@ class IRMixin:
             faiss_path = os.path.join(current_folder, f"{model}{appendix}.index")
             with open(json_path, "r", encoding="utf-8") as f:
                 files = json.load(f)
+            index = faiss.read_index(faiss_path)
             self.faiss_info[appendix] = {
-                "index": faiss.read_index(faiss_path),
+                "index": index,
                 "files": files,
+                "num_total": index.ntotal,
             }
 
     def get_raw_outputs(
@@ -201,13 +203,15 @@ class IRMixin:
     ) -> Tuple[List[List[str]], List[List[float]]]:
         import triton_python_backend_utils as pb_utils
 
+        info = self.faiss_info[appendix]
+        index, files, num_total = info["index"], info["files"], info["num_total"]
+        index.nprobe = n_probe
+        top_k = min(top_k, num_total)
+
         tensor = pb_utils.get_output_tensor_by_name(response, "predictions")
         codes = tensor.as_numpy()
         all_files, all_distances = [], []
         for code in codes:
-            info = self.faiss_info[appendix]
-            index, files = info["index"], info["files"]
-            index.nprobe = n_probe
             distances, indices = index.search(code[None, ...], top_k)
             all_files.append([files[i] for i in indices[0]])
             all_distances.append(distances[0])
