@@ -26,7 +26,7 @@ buildkitd:
   - docker rmi ${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA}
   dependencies:
     - test
-deploy_developenv:
+deploy_testenv:
   image:
     harbor.nolibox.com/base-image/buildyaml:latest
   stage: deploy
@@ -44,5 +44,15 @@ deploy_productionenv:
     - mkdir -p ~/.kube/
     - echo $gpu_kube_config | base64 -d > ~/.kube/config
     - kubectl set image deployment ${CI_PROJECT_NAME} ${CI_PROJECT_NAME}=${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA} -n production --record
+  rules:
+    - when: manual
+deploy_developenv:
+  image:
+    harbor.nolibox.com/base-image/buildyaml:latest
+  stage: deploy
+  script:
+    - mkdir -p ~/.kube/
+    - echo $gpu_kube_config | base64 -d > ~/.kube/config
+    - kubectl set image deployment ${CI_PROJECT_NAME} ${CI_PROJECT_NAME}=${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA} -n develop --record
   rules:
     - when: manual
