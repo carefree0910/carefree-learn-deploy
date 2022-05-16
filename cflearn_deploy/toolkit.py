@@ -205,7 +205,11 @@ class IRMixin:
         import triton_python_backend_utils as pb_utils
 
         info = self.faiss_info[appendix]
-        index, json_strings, num_total = info["index"], info["json_strings"], info["num_total"]
+        index, json_strings, num_total = (
+            info["index"],
+            info["json_strings"],
+            info["num_total"],
+        )
         index.nprobe = n_probe
         top_k = min(top_k, num_total)
 
