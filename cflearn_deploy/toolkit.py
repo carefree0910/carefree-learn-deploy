@@ -183,14 +183,15 @@ class IRMixin:
     def init_faiss(self, model: str, current_folder: str) -> None:
         self.faiss_info = {}
         for appendix in self.appendix_list:
-            json_path = os.path.join(current_folder, f"{model}{appendix}_files.json")
+            json_path = os.path.join(current_folder, f"{model}{appendix}_info.json")
             faiss_path = os.path.join(current_folder, f"{model}{appendix}.index")
             with open(json_path, "r", encoding="utf-8") as f:
-                files = json.load(f)
+                json_info = json.load(f)
+            json_strings = [json.dumps(elem) for elem in json_info]
             index = faiss.read_index(faiss_path)
             self.faiss_info[appendix] = {
                 "index": index,
-                "files": files,
+                "json_strings": json_strings,
                 "num_total": index.ntotal,
             }
 
@@ -204,21 +205,21 @@ class IRMixin:
         import triton_python_backend_utils as pb_utils
 
         info = self.faiss_info[appendix]
-        index, files, num_total = info["index"], info["files"], info["num_total"]
+        index, json_strings, num_total = info["index"], info["json_strings"], info["num_total"]
         index.nprobe = n_probe
         top_k = min(top_k, num_total)
 
         tensor = pb_utils.get_output_tensor_by_name(response, "predictions")
         codes = tensor.as_numpy()
-        all_files, all_distances = [], []
+        all_json_strings, all_distances = [], []
         for code in codes:
             distances, indices = index.search(code[None, ...], top_k)
             indices = indices[0]
             distances = [d for i, d in enumerate(distances[0]) if indices[i] != -1]
             indices = [i for i in indices if i != -1]
-            all_files.append([files[i] for i in indices])
+            all_json_strings.append([json_strings[i] for i in indices])
             all_distances.append(distances)
-        return all_files, all_distances
+        return all_json_strings, all_distances
 
     def get_outputs(
         self,
