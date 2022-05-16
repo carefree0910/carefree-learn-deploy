@@ -454,11 +454,12 @@ class Client:
         names = [output["name"] for output in outputs]
         raw: List[np.ndarray] = [result.as_numpy(k) for k in names]
         lists = [arr.tolist() for arr in raw]
-        converted = [
-            [
-                [elem.decode() if isinstance(elem, bytes) else elem for elem in arr]
-                for arr in arr_list
-            ]
-            for arr_list in lists
-        ]
-        return dict(zip(names, converted))
+        final = []
+        for arr_list in lists:
+            converted_list = []
+            for arr in arr_list:
+                converted = [elem.decode() if isinstance(elem, bytes) else elem for elem in arr]
+                converted = [None if elem == "None" else elem for elem in converted]
+                converted_list.append(converted)
+            final.append(converted_list)
+        return dict(zip(names, final))
