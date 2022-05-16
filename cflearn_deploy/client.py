@@ -458,7 +458,7 @@ class Client:
         for arr_list in lists:
             converted_list = []
             for arr in arr_list:
-                converted = [elem.decode() if isinstance(elem, bytes) else elem for elem in arr]
+                converted = [e.decode() if isinstance(e, bytes) else e for e in arr]
                 converted = [None if elem == "None" else elem for elem in converted]
                 converted_list.append(converted)
             final.append(converted_list)
