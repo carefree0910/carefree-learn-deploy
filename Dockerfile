@@ -8,7 +8,7 @@ RUN python -m venv .venv &&  \
     rm -rf core && \
     find /carefree-learn-deploy/.venv \( -type d -a -name test -o -name tests \) -o \( -type f -a -name '*.pyc' -o -name '*.pyo' \) -exec rm -rf '{}' \+
 
-FROM nvcr.io/nvidia/tritonserver:21.09-py3
+FROM nvcr.io/nvidia/tritonserver:22.04-py3
 WORKDIR /carefree-learn-deploy
 COPY --from=builder /carefree-learn-deploy /carefree-learn-deploy
 ENV PATH="/carefree-learn-deploy/.venv/bin:$PATH"
