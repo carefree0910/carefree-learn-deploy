@@ -1,19 +1,6 @@
 stages:
-  - test
   - build
   - deploy
-test:
-  stage: test
-  image: python:3.6-slim
-  before_script:
-    - pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
-    - python3 -m pip install types-requests
-    - python3 -m pip install types-PyYAML
-    - pip3 install black
-    - pip3 install mypy
-  script:
-    - black . --check --diff
-    - mypy .
 buildkitd:
   stage: build
   tags:

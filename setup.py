@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 VERSION = "0.1.0"
-DESCRIPTION = "Production implementations for carefree-learn"
+DESCRIPTION = ""
 with open("README.md", encoding="utf-8") as f:
     LONG_DESCRIPTION = f.read()
 
@@ -9,21 +9,7 @@ setup(
     name="carefree-learn-deploy",
     version=VERSION,
     packages=find_packages(exclude=("tests",)),
-    install_requires=[
-        "faiss-gpu",
-        "gevent",
-        "geventhttpclient",
-        "ftfy",
-        "regex",
-        "dill",
-        "tqdm",
-        "PyYaml",
-        "pillow",
-        "scikit-image",
-        "scikit-learn",
-        "scipy>=1.2.1",
-        "numpy>=1.19.2",
-    ],
+    install_requires=[],
     author="carefree0910",
     author_email="syameimaru.saki@gmail.com",
     url="https://github.com/carefree0910/carefree-learn-deploy",
