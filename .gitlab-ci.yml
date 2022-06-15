@@ -11,8 +11,6 @@ buildkitd:
   - docker build ./ -t ${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA}
   - docker push ${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA}
   - docker rmi ${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA}
-  dependencies:
-    - test
 deploy_testenv:
   image:
     harbor.nolibox.com/base-image/buildyaml:latest
