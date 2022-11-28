@@ -1,43 +1,25 @@
 stages:
   - build
   - deploy
+
 buildkitd:
   stage: build
   tags:
-  - docker
+    - docker
   script:
-  - mkdir -p ~/.docker
-  - echo "{\"auths\":{\"https://${TENCENTREGISTRY}\":{\"username\":\"${TENCENT_REGISTRY_USER}\",\"password\":\"${TENCENT_REGISTRY_PASSWORD}\"}}}" > ~/.docker/config.json
-  - docker build ./ -t ${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA}
-  - docker push ${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA}
-  - docker rmi ${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA}
-deploy_testenv:
-  image:
-    harbor.nolibox.com/base-image/buildyaml:latest
-  stage: deploy
-  script:
-    - mkdir -p ~/.kube/
-    - echo $gpu_kube_config | base64 -d > ~/.kube/config
-    - kubectl set image deployment ${CI_PROJECT_NAME} ${CI_PROJECT_NAME}=${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA} -n test --record
+    - mkdir -p ~/.docker
+    - echo "{\"auths\":{\"https://${HUAWEIREGISTRY}\":{\"username\":\"${HUAWEI_REGISTRY_USER}\",\"password\":\"${HUAWEI_REGISTRY_PASSWORD}\"}}}" > ~/.docker/config.json
+    - docker build ./ -t ${HUAWEIREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA}
+    - docker push ${HUAWEIREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA}
+    - docker rmi ${HUAWEIREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA}
   rules:
     - when: manual
-deploy_productionenv:
-  image:
-    harbor.nolibox.com/base-image/buildyaml:latest
+deploy_production:
+  image: harbor.nolibox.com/base-image/buildyaml:latest
   stage: deploy
   script:
     - mkdir -p ~/.kube/
-    - echo $gpu_kube_config | base64 -d > ~/.kube/config
-    - kubectl set image deployment ${CI_PROJECT_NAME} ${CI_PROJECT_NAME}=${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA} -n production --record
-  rules:
-    - when: manual
-deploy_developenv:
-  image:
-    harbor.nolibox.com/base-image/buildyaml:latest
-  stage: deploy
-  script:
-    - mkdir -p ~/.kube/
-    - echo $gpu_kube_config | base64 -d > ~/.kube/config
-    - kubectl set image deployment ${CI_PROJECT_NAME} ${CI_PROJECT_NAME}=${TENCENTREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA} -n develop --record
+    - echo $huawei_kube_config | base64 -d > ~/.kube/config
+    - kubectl set image deployment ${CI_PROJECT_NAME} ${CI_PROJECT_NAME}=${HUAWEIREGISTRY}/${CI_PROJECT_NAME}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHORT_SHA} -n production --record
   rules:
     - when: manual
